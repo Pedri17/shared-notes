@@ -1,3 +1,16 @@
 <resources>
-    <string name="app_name">SharedNotes</string>
+    <string name="app_name" translatable="false">SharedNotes</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="remember_me">Remember Me</string>
+    <string name="login">Login</string>
+    <string name="or_sign_up">Or Sign Up</string>
+    <string name="wrong_credentials">Wrong Credentials</string>
+    <string name="register">Register</string>
+    <string name="enter_your_login">Enter your login</string>
+    <string name="password">Password</string>
+    <string name="enter_your_password">Enter your password</string>
+    <string name="do_you_want_to_restore_this_note">Do you want to restore this note?</string>
+    <string name="do_you_want_to_delete_this_note">Do you want to delete this note?</string>
+    <string name="it_can_only_be_read_and_will_be_deleted_permanently_on_a_month">It can only be read and will be deleted permanently on a month</string>
+    <string name="close">Close</string>
 </resources>

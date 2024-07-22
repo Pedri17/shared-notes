@@ -18,8 +18,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.pproject.sharednotes.R
 import com.pproject.sharednotes.presentation.common.DataTextField
 import com.pproject.sharednotes.presentation.common.PasswordField
 
@@ -46,26 +48,26 @@ fun RegisterScreen(navController: NavController){
                 .fillMaxSize()
                 .padding(horizontal = 30.dp)
         ){
-            Spacer(modifier=Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             DataTextField(
                 value = credentials.user,
-                onChange = {data -> credentials = credentials.copy(user = data)},
+                onChange = { data -> credentials = credentials.copy(user = data) },
                 modifier = Modifier.fillMaxWidth()
             )
             DataTextField(
                 value = credentials.email,
-                onChange = {data -> credentials = credentials.copy(email = data)},
+                onChange = { data -> credentials = credentials.copy(email = data) },
                 modifier = Modifier.fillMaxWidth()
             )
             PasswordField(
                 value = credentials.password,
-                onChange = {data -> credentials = credentials.copy(password = data)},
+                onChange = { data -> credentials = credentials.copy(password = data) },
                 submit = {},
                 modifier = Modifier.fillMaxWidth()
             )
             PasswordField(
                 value = credentials.password,
-                onChange = {data -> credentials = credentials.copy(repeatPassword = data)},
+                onChange = { data -> credentials = credentials.copy(repeatPassword = data) },
                 submit = {},
                 modifier = Modifier.fillMaxWidth()
             )
@@ -76,7 +78,7 @@ fun RegisterScreen(navController: NavController){
                 shape = RoundedCornerShape(5.dp),
                 modifier = Modifier.fillMaxWidth()
             ){
-                Text("Register")
+                Text(stringResource(R.string.register))
             }
         }
     }

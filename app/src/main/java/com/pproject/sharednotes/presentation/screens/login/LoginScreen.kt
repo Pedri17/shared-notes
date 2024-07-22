@@ -20,8 +20,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.pproject.sharednotes.R
 import com.pproject.sharednotes.presentation.common.ClickableRouteText
 import com.pproject.sharednotes.presentation.common.LabeledCheckbox
 import com.pproject.sharednotes.presentation.common.DataTextField
@@ -50,17 +52,17 @@ fun LoginScreen(navController: NavController) {
                 .fillMaxSize()
                 .padding(horizontal = 30.dp)
         ){
-            Spacer(modifier=Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             DataTextField(
                 value = credentials.login,
-                onChange = {data -> credentials = credentials.copy(login = data)},
+                onChange = { data -> credentials = credentials.copy(login = data) },
                 modifier = Modifier.fillMaxWidth()
             )
             PasswordField(
                 value = credentials.password,
                 onChange = { data -> credentials = credentials.copy(password = data) },
                 submit = {
-                    if (!checkCredentials(credentials, navController.context)){
+                    if (!checkCredentials(credentials, navController.context)) {
                         credentials = LoginCredentials();
                     }
                 },
@@ -69,12 +71,12 @@ fun LoginScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(10.dp))
             ClickableRouteText(
                 navController = navController,
-                text = "Forgot password?",
+                text = stringResource(R.string.login),
                 route = AppScreens.SplashScreen.route
             )
             Spacer(modifier = Modifier.height(10.dp))
             LabeledCheckbox(
-                label = "Remember Me",
+                label = stringResource(R.string.remember_me),
                 onCheckChanged = {
                     credentials = credentials.copy(remember = !credentials.remember)
                 },
@@ -91,20 +93,20 @@ fun LoginScreen(navController: NavController) {
                 enabled = credentials.isNotEmpty(),
                 shape = RoundedCornerShape(5.dp),
                 modifier = Modifier.fillMaxWidth()
-            ){
-                Text("Login")
+            ) {
+                Text(stringResource(R.string.login))
             }
             Spacer(modifier = Modifier.height(10.dp))
             ClickableRouteText(
                 navController = navController,
-                text = "Or Sign Up",
+                text = stringResource(R.string.or_sign_up),
                 route = AppScreens.RegisterScreen.route
             )
         }
     }
 }
 
-private fun checkCredentials(cred: LoginCredentials, context: Context): Boolean{
+private fun checkCredentials(cred: LoginCredentials, context: Context): Boolean {
     val emailPattern: Regex = Regex("^[^.\\s][\\w\\-.{2,}]+@([\\w-]+\\.)+[\\w-]{2,}\$")
     val passwordPattern: Regex = Regex("^(?=.*[0–9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$")
     val userPattern: Regex = Regex("^[a-zA-Z0-9]+([._]?[a-zA-Z0-9]+)*\$")
@@ -112,15 +114,15 @@ private fun checkCredentials(cred: LoginCredentials, context: Context): Boolean{
     // Test email or username
     var validId = false
     if (cred.isNotEmpty()){
-        if (cred.login.contains('@')) {
-            validId = emailPattern.matches(cred.login)
-        }else{
-            validId = userPattern.matches(cred.login)
+        validId = if (cred.login.contains('@')) {
+            emailPattern.matches(cred.login)
+        } else {
+            userPattern.matches(cred.login)
         }
     }
 
     return if (!(validId && passwordPattern.matches(cred.password))) {
-        Toast.makeText(context, "Wrong Credentials", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, context.getString(R.string.wrong_credentials), Toast.LENGTH_SHORT).show()
         false
     } else {
         true

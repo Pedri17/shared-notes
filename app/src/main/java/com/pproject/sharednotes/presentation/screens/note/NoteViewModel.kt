@@ -16,6 +16,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
+import com.pproject.sharednotes.data.test.getAllUserNames
+import com.pproject.sharednotes.data.test.getAllUsers
+import com.pproject.sharednotes.data.test.getUser
 import com.pproject.sharednotes.presentation.screens.note.components.Section
 
 var testContent: String = "PRUEBA de contenido bastante grande\n- para ver\n- que todo\nfuncione mínimamente correctamente, ahora checkbox:\n[X]cosa\n[v]otra cosa\n[V]la última\n"
@@ -54,6 +57,22 @@ class NoteViewModel : ViewModel() {
 
     fun updateFolder(newFolderId: Int) {
         folderId = newFolderId
+    }
+
+    private val _collaborators = getAllUserNames().toMutableStateList()
+    val collaborators: List<String>
+        get() = _collaborators
+
+    fun addCollaborator(collaboratorName: String): Boolean {
+        return if (!_collaborators.contains(collaboratorName)) {
+            _collaborators.add(collaboratorName)
+        } else {
+            false
+        }
+    }
+
+    fun deleteCollaborator(collaboratorName: String): Boolean {
+        return _collaborators.remove(collaboratorName)
     }
 }
 

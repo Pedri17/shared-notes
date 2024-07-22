@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="forgot_password">¿Contraseña olvidada?</string>
+    <string name="remember_me">Recuérdame</string>
+    <string name="login">Iniciar sesión</string>
+    <string name="or_sign_up">O regístrate</string>
+    <string name="wrong_credentials">Credenciales incorrectos</string>
+    <string name="register">Registro</string>
+    <string name="enter_your_login">Escribe tus credenciales</string>
+    <string name="password">Contraseña</string>
+    <string name="enter_your_password">Escribe tu contraseña</string>
+    <string name="do_you_want_to_restore_this_note">¿Quieres restaurar esta nota?</string>
+    <string name="do_you_want_to_delete_this_note">¿Quieres eliminar esta nota?</string>
+    <string name="it_can_only_be_read_and_will_be_deleted_permanently_on_a_month">Solo podrá ser leída y será eliminada definitivamente en un mes si no es restaurada.</string>
+    <string name="close">Cerrar</string>
+</resources>

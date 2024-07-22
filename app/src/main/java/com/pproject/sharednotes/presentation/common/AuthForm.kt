@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -34,6 +35,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.pproject.sharednotes.R
 
 
 @Composable
@@ -41,8 +43,8 @@ fun DataTextField(
     value: String,
     onChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    label: String = "Login",
-    placeholder: String = "Enter your login"
+    label: String = stringResource(R.string.login),
+    placeholder: String = stringResource(R.string.enter_your_login),
 ) {
     val focusManager = LocalFocusManager.current
     val personIcon = @Composable {
@@ -59,7 +61,7 @@ fun DataTextField(
         modifier = modifier,
         leadingIcon = personIcon,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-        keyboardActions = KeyboardActions(onNext = {focusManager.moveFocus(FocusDirection.Down)} ),
+        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
         placeholder = { Text(placeholder) },
         label = { Text(label) },
         singleLine = true,
@@ -73,8 +75,8 @@ fun PasswordField(
     onChange: (String) -> Unit,
     submit: () -> Unit,
     modifier: Modifier = Modifier,
-    label: String = "Password",
-    placeholder: String = "Enter your password"
+    label: String = stringResource(R.string.password),
+    placeholder: String = stringResource(R.string.enter_your_password),
 ){
     var isPasswordVisible by remember { mutableStateOf(false) }
     val keyIcon = @Composable {
@@ -85,8 +87,8 @@ fun PasswordField(
         )
     }
     val visibilityIcon = @Composable {
-        IconButton( onClick = {isPasswordVisible = !isPasswordVisible}){
-            Icon (
+        IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+            Icon(
                 if (isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
@@ -104,11 +106,11 @@ fun PasswordField(
             imeAction = ImeAction.Done,
             keyboardType = KeyboardType.Password
         ),
-        keyboardActions = KeyboardActions( onDone = { submit() }),
+        keyboardActions = KeyboardActions(onDone = { submit() }),
         placeholder = { Text(placeholder) },
         label = { Text(label) },
         singleLine = true,
-        visualTransformation = if(isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
+        visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
     )
 }
 
@@ -117,12 +119,12 @@ fun LabeledCheckbox(
     label: String,
     onCheckChanged: () -> Unit,
     isChecked: Boolean
-){
+) {
     Row(
         Modifier
             .clickable(onClick = onCheckChanged)
             .padding(4.dp)
-    ){
+    ) {
         Checkbox(checked = isChecked, onCheckedChange = null)
         Spacer(Modifier.size(6.dp))
         Text(label)
@@ -138,7 +140,8 @@ fun ClickableRouteText(
 ){
     Text(
         text = text,
-        modifier = Modifier.clickable {navController.navigate(route)
+        modifier = Modifier.clickable {
+            navController.navigate(route)
         },
         style = TextStyle(color)
     )

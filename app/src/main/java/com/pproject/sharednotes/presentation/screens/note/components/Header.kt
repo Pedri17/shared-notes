@@ -1,30 +1,23 @@
 package com.pproject.sharednotes.presentation.screens.note.components
 
-import android.graphics.drawable.Icon
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.FolderShared
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PushPin
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Unarchive
 import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.PersonAdd
 import androidx.compose.material.icons.outlined.PushPin
-import androidx.compose.material.icons.outlined.Unarchive
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconToggleButton
@@ -34,12 +27,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.pproject.sharednotes.R
 import com.pproject.sharednotes.data.entity.Note
+import com.pproject.sharednotes.presentation.common.BasicIconButton
+import com.pproject.sharednotes.presentation.common.BasicIconToggleButton
 import com.pproject.sharednotes.presentation.common.ConfirmationDialog
+import com.pproject.sharednotes.presentation.common.NameListManagerDialog
+import com.pproject.sharednotes.presentation.common.NameListSelectorDialog
 
 
 @Composable
@@ -48,7 +46,9 @@ fun Header(
     folderId: Int,
     folderList: List<Pair<Int, String>>,
     onChangeFolder: (Int) -> Unit,
-    onClickShare: () -> Unit,
+    onAddCollaborator: (String) -> Unit,
+    onDeleteCollaborator: (String) -> Unit,
+    collaboratorList: List<String>,
     isPinned: Boolean,
     onChangePinned: (Boolean) -> Unit,
     situation: Note.Situation,
@@ -58,6 +58,7 @@ fun Header(
 ) {
     val openFolderDialog = remember { mutableStateOf(false) }
     val openConfirmDeleteDialog = remember { mutableStateOf(false) }
+    val openCollaboratorsDialog = remember { mutableStateOf(false) }
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -67,7 +68,7 @@ fun Header(
             horizontalArrangement = Arrangement.Start,
             modifier = Modifier,
         ) {
-            NoteIconButton(
+            BasicIconButton(
                 icon = Icons.Default.ArrowBackIosNew,
                 onClick = onClickBack
             )
@@ -76,29 +77,31 @@ fun Header(
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
         ) {
-            NoteIconToggleButton(
+            BasicIconToggleButton(
                 icon = Icons.Outlined.Folder,
                 toggledIcon = Icons.Default.Folder,
                 isToggled = folderId > -1,
                 onChange = { openFolderDialog.value = true },
             )
-            NoteIconButton(
-                icon = Icons.Default.Share,
-                onClick = onClickShare,
+            BasicIconToggleButton(
+                icon = Icons.Outlined.PersonAdd,
+                toggledIcon = Icons.Default.PersonAdd,
+                isToggled = collaboratorList.isNotEmpty(),
+                onChange = { openCollaboratorsDialog.value = true },
             )
-            NoteIconToggleButton(
+            BasicIconToggleButton(
                 icon = Icons.Outlined.PushPin,
                 toggledIcon = Icons.Default.PushPin,
                 isToggled = isPinned,
                 onChange = onChangePinned,
             )
-            NoteIconToggleButton(
+            BasicIconToggleButton(
                 icon = Icons.Outlined.Archive,
                 toggledIcon = Icons.Default.Unarchive,
                 isToggled = situation == Note.Situation.ARCHIVED,
                 onChange = onChangeArchive,
             )
-            NoteIconToggleButton(
+            BasicIconToggleButton(
                 icon = Icons.Outlined.Delete,
                 toggledIcon = Icons.Default.Delete,
                 isToggled = situation == Note.Situation.DELETED,
@@ -108,81 +111,47 @@ fun Header(
     }
 
     if (openFolderDialog.value) {
-        UpperTitleSelectorDialog(
+        NameListSelectorDialog(
             list = folderList,
+            icon = Icons.Default.Folder,
+            noneSelectionIcon = Icons.Outlined.Folder,
             selectedId = folderId,
             onCloseDialog = { openFolderDialog.value = false },
             onAcceptDialog = onChangeFolder,
-            modifier = Modifier.heightIn(max = LocalConfiguration.current.screenHeightDp.dp * 0.7f)
         )
     }
     if (openConfirmDeleteDialog.value) {
         if (situation == Note.Situation.DELETED) {
             ConfirmationDialog(
-                message = "Do you want to restore this note?",
+                message = stringResource(R.string.do_you_want_to_restore_this_note),
                 onClose = { openConfirmDeleteDialog.value = false },
                 onConfirm = { onChangeDelete(false) }
             )
         } else {
             ConfirmationDialog(
-                message = "Do you want to delete this note?",
-                submessage = "It can only be read and will be deleted permanently on a month",
+                message = stringResource(R.string.do_you_want_to_delete_this_note),
+                submessage = stringResource(R.string.it_can_only_be_read_and_will_be_deleted_permanently_on_a_month),
                 onClose = { openConfirmDeleteDialog.value = false },
                 onConfirm = { onChangeDelete(true) }
             )
         }
-
-
     }
-}
-
-@Composable
-fun NoteIconButton(
-    icon: ImageVector,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-) {
-    IconButton(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = modifier
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
+    if (openCollaboratorsDialog.value) {
+        NameListManagerDialog(
+            list = stringToPair(collaboratorList),
+            icon = Icons.Default.Person,
+            onAddElement = onAddCollaborator,
+            onDeleteElement = onDeleteCollaborator,
+            onEditElement = null,
+            onCloseDialog = { openCollaboratorsDialog.value = false }
         )
     }
 }
 
-@Composable
-fun NoteIconToggleButton(
-    icon: ImageVector,
-    toggledIcon: ImageVector,
-    isToggled: Boolean,
-    onChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-) {
-    IconToggleButton(
-        checked = isToggled,
-        onCheckedChange = onChange,
-        enabled = enabled,
-        modifier = modifier,
-    ) {
-        if (isToggled) {
-            Icon(
-                imageVector = toggledIcon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-            )
-        } else {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-            )
-        }
+fun stringToPair(list: List<String>): List<Pair<String, String>> {
+    var result: List<Pair<String, String>> = emptyList()
+    for (item in list) {
+        result = result.plus(Pair(item, item))
     }
+    return result
 }
