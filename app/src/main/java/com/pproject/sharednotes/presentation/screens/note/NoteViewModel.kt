@@ -16,14 +16,27 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
+import androidx.lifecycle.SavedStateHandle
 import com.pproject.sharednotes.data.test.getAllUserNames
 import com.pproject.sharednotes.data.test.getAllUsers
+import com.pproject.sharednotes.data.test.getNote
 import com.pproject.sharednotes.data.test.getUser
 import com.pproject.sharednotes.presentation.screens.note.components.Section
 
 var testContent: String = "PRUEBA de contenido bastante grande\n- para ver\n- que todo\nfuncione mínimamente correctamente, ahora checkbox:\n[X]cosa\n[v]otra cosa\n[V]la última\n"
 
 class NoteViewModel : ViewModel() {
+    fun setNote(noteID: Int) {
+        val note = getNote(noteID)
+        note?.let {
+            updateTitle(note.title)
+            updateContent(note.content)
+            updateFolder(note.folder)
+            updatePinned(note.pinned)
+            updateSituation(note.situation)
+        }
+    }
+
     var title: String by mutableStateOf("")
         private set
 
@@ -31,9 +44,13 @@ class NoteViewModel : ViewModel() {
         title = newTitle
     }
 
-    private val _content = decomposeInSections(testContent).toMutableStateList()
+    private var _content = decomposeInSections(testContent).toMutableStateList()
     val content: List<Section>
         get() = _content
+
+    private fun updateContent(newContent: String) {
+        _content = decomposeInSections(newContent).toMutableStateList()
+    }
 
     fun updateContent(section: Section, newText: String) {
         _content[_content.indexOf(section)] = section.copy(text = newText)
@@ -52,10 +69,10 @@ class NoteViewModel : ViewModel() {
         situation = newSituation
     }
 
-    var folderId: Int by mutableIntStateOf(-1)
+    var folderId: Int? by mutableStateOf(null)
         private set
 
-    fun updateFolder(newFolderId: Int) {
+    fun updateFolder(newFolderId: Int?) {
         folderId = newFolderId
     }
 

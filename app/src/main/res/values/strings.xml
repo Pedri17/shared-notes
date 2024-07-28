@@ -13,4 +13,11 @@
     <string name="do_you_want_to_delete_this_note">Do you want to delete this note?</string>
     <string name="it_can_only_be_read_and_will_be_deleted_permanently_on_a_month">It can only be read and will be deleted permanently on a month</string>
     <string name="close">Close</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="none">None</string>
+    <string name="accept">Accept</string>
+    <string name="cancel">Cancel</string>
+    <string name="do_you_want_to_delete_permanently_this_folder">Do you want to delete permanently this folder?</string>
+    <string name="notes_will_not_be_deleted_but_will_remain_without_an_assigned_folder">Notes will not be deleted but will remain without an assigned folder.</string>
 </resources>

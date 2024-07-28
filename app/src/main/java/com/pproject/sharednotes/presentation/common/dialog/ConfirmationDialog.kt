@@ -1,4 +1,4 @@
-package com.pproject.sharednotes.presentation.common
+package com.pproject.sharednotes.presentation.common.dialog
 
 import android.graphics.Paint.Style
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.pproject.sharednotes.R
 
 @Composable
 fun ConfirmationDialog(
@@ -88,12 +90,12 @@ fun ConfirmationDialog(
                             onClose()
                         }
                     ) {
-                        Text("Yes")
+                        Text(stringResource(R.string.yes))
                     }
                     TextButton(
                         onClick = onClose
                     ) {
-                        Text("No")
+                        Text(stringResource(R.string.no))
                     }
                 }
             }

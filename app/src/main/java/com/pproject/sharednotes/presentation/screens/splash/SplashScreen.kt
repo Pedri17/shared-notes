@@ -21,7 +21,7 @@ fun SplashScreen(navController: NavController) {
     LaunchedEffect(key1 = true) {
         delay(100)
         navController.popBackStack()
-        navController.navigate(AppScreens.NoteScreen.route)
+        navController.navigate(AppScreens.FolderScreen.route)
     }
 
     Splash()

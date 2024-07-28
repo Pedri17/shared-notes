@@ -1,10 +1,8 @@
 package com.pproject.sharednotes.presentation.screens.note.components
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Delete
@@ -18,34 +16,28 @@ import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.PersonAdd
 import androidx.compose.material.icons.outlined.PushPin
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconToggleButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.pproject.sharednotes.R
 import com.pproject.sharednotes.data.entity.Note
 import com.pproject.sharednotes.presentation.common.BasicIconButton
 import com.pproject.sharednotes.presentation.common.BasicIconToggleButton
-import com.pproject.sharednotes.presentation.common.ConfirmationDialog
-import com.pproject.sharednotes.presentation.common.NameListManagerDialog
-import com.pproject.sharednotes.presentation.common.NameListSelectorDialog
+import com.pproject.sharednotes.presentation.common.Header
+import com.pproject.sharednotes.presentation.common.dialog.ConfirmationDialog
+import com.pproject.sharednotes.presentation.common.dialog.NameListManagerDialog
+import com.pproject.sharednotes.presentation.common.dialog.NameListSelectorDialog
 
 
 @Composable
-fun Header(
+fun NoteHeader(
     onClickBack: () -> Unit,
-    folderId: Int,
+    folderId: Int?,
     folderList: List<Pair<Int, String>>,
-    onChangeFolder: (Int) -> Unit,
+    onChangeFolder: (Int?) -> Unit,
     onAddCollaborator: (String) -> Unit,
     onDeleteCollaborator: (String) -> Unit,
     collaboratorList: List<String>,
@@ -59,55 +51,41 @@ fun Header(
     val openFolderDialog = remember { mutableStateOf(false) }
     val openConfirmDeleteDialog = remember { mutableStateOf(false) }
     val openCollaboratorsDialog = remember { mutableStateOf(false) }
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = modifier.fillMaxWidth(),
+
+    Header(
+        onClickBack = onClickBack,
+        modifier = modifier
     ) {
-        Row(
-            horizontalArrangement = Arrangement.Start,
-            modifier = Modifier,
-        ) {
-            BasicIconButton(
-                icon = Icons.Default.ArrowBackIosNew,
-                onClick = onClickBack
-            )
-        }
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier
-        ) {
-            BasicIconToggleButton(
-                icon = Icons.Outlined.Folder,
-                toggledIcon = Icons.Default.Folder,
-                isToggled = folderId > -1,
-                onChange = { openFolderDialog.value = true },
-            )
-            BasicIconToggleButton(
-                icon = Icons.Outlined.PersonAdd,
-                toggledIcon = Icons.Default.PersonAdd,
-                isToggled = collaboratorList.isNotEmpty(),
-                onChange = { openCollaboratorsDialog.value = true },
-            )
-            BasicIconToggleButton(
-                icon = Icons.Outlined.PushPin,
-                toggledIcon = Icons.Default.PushPin,
-                isToggled = isPinned,
-                onChange = onChangePinned,
-            )
-            BasicIconToggleButton(
-                icon = Icons.Outlined.Archive,
-                toggledIcon = Icons.Default.Unarchive,
-                isToggled = situation == Note.Situation.ARCHIVED,
-                onChange = onChangeArchive,
-            )
-            BasicIconToggleButton(
-                icon = Icons.Outlined.Delete,
-                toggledIcon = Icons.Default.Delete,
-                isToggled = situation == Note.Situation.DELETED,
-                onChange = { openConfirmDeleteDialog.value = true },
-            )
-        }
+        BasicIconToggleButton(
+            icon = Icons.Outlined.Folder,
+            toggledIcon = Icons.Default.Folder,
+            isToggled = folderId != null,
+            onChange = { openFolderDialog.value = true },
+        )
+        BasicIconToggleButton(
+            icon = Icons.Outlined.PersonAdd,
+            toggledIcon = Icons.Default.PersonAdd,
+            isToggled = collaboratorList.isNotEmpty(),
+            onChange = { openCollaboratorsDialog.value = true },
+        )
+        BasicIconToggleButton(
+            icon = Icons.Outlined.PushPin,
+            toggledIcon = Icons.Default.PushPin,
+            isToggled = isPinned,
+            onChange = onChangePinned,
+        )
+        BasicIconToggleButton(
+            icon = Icons.Outlined.Archive,
+            toggledIcon = Icons.Default.Unarchive,
+            isToggled = situation == Note.Situation.ARCHIVED,
+            onChange = onChangeArchive,
+        )
+        BasicIconToggleButton(
+            icon = Icons.Outlined.Delete,
+            toggledIcon = Icons.Default.Delete,
+            isToggled = situation == Note.Situation.DELETED,
+            onChange = { openConfirmDeleteDialog.value = true },
+        )
     }
 
     if (openFolderDialog.value) {

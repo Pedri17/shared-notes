@@ -14,7 +14,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.pproject.sharednotes.data.entity.Note
 import com.pproject.sharednotes.presentation.screens.note.components.EditableTitle
-import com.pproject.sharednotes.presentation.screens.note.components.Header
+import com.pproject.sharednotes.presentation.screens.note.components.NoteHeader
 import com.pproject.sharednotes.presentation.screens.note.components.Section
 import com.pproject.sharednotes.presentation.screens.note.components.SectionsField
 
@@ -37,8 +37,10 @@ var listTest: List<Pair<Int, String>> = listOf(
 @Composable
 fun NoteScreen(
     navController: NavController,
-    noteViewModel: NoteViewModel = viewModel()
+    noteID: Int,
+    noteViewModel: NoteViewModel = viewModel(),
 ) {
+    noteViewModel.setNote(noteID)
     Surface {
         Column(
             verticalArrangement = Arrangement.Top,
@@ -47,7 +49,7 @@ fun NoteScreen(
                 .fillMaxSize()
                 .padding(horizontal = 20.dp)
         ) {
-            Header(
+            NoteHeader(
                 onClickBack = { navController.popBackStack() },
                 folderId = noteViewModel.folderId,
                 onChangeFolder = { noteViewModel.updateFolder(it) },

@@ -1,6 +1,5 @@
-package com.pproject.sharednotes.presentation.common
+package com.pproject.sharednotes.presentation.common.dialog
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,20 +27,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.toMutableStateList
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.pproject.sharednotes.R
 import kotlinx.coroutines.launch
+
+data class ToAddElementState(
+    var name: String = "",
+    var isActive: Boolean = false,
+)
 
 @Composable
 fun <T : Any> NameListManagerDialog(
@@ -56,8 +58,8 @@ fun <T : Any> NameListManagerDialog(
     val focusRequester = remember { FocusRequester() }
     val coroutineScope = rememberCoroutineScope()
     val columnState = rememberLazyListState()
-    val elementToAddName = remember { mutableStateOf("") }
-    val elementToAddActive = remember { mutableStateOf(false) }
+
+    var toAddElementState by remember { mutableStateOf(ToAddElementState()) }
 
     Dialog(
         onDismissRequest = onCloseDialog
@@ -105,17 +107,18 @@ fun <T : Any> NameListManagerDialog(
                                 },
                             )
                         }
-                        if (onAddElement != null && elementToAddActive.value) {
+                        if (onAddElement != null && toAddElementState.isActive) {
                             item {
                                 ToAddTitleElement(
-                                    toEditText = elementToAddName.value,
-                                    onChange = { elementToAddName.value = it },
+                                    toEditText = toAddElementState.name,
+                                    onChange = {
+                                        toAddElementState = toAddElementState.copy(name = it)
+                                    },
                                     icon = Icons.Default.Person,
                                     modifier = Modifier.focusRequester(focusRequester),
                                     onDone = {
-                                        onAddElement(elementToAddName.value)
-                                        elementToAddName.value = ""
-                                        elementToAddActive.value = false
+                                        onAddElement(toAddElementState.name)
+                                        toAddElementState = ToAddElementState()
                                         coroutineScope.launch {
                                             columnState.animateScrollToItem(list.size)
                                         }
@@ -127,11 +130,11 @@ fun <T : Any> NameListManagerDialog(
                             }
                         }
                     }
-                    if (onAddElement != null && !elementToAddActive.value) {
+                    if (onAddElement != null && !toAddElementState.isActive) {
                         LargeFloatingActionButton(
                             shape = FloatingActionButtonDefaults.largeShape,
                             onClick = {
-                                elementToAddActive.value = true
+                                toAddElementState = toAddElementState.copy(isActive = true)
                                 coroutineScope.launch {
                                     columnState.animateScrollToItem(list.size)
                                 }

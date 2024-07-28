@@ -51,7 +51,7 @@ fun LoginScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 30.dp)
-        ){
+        ) {
             Spacer(modifier = Modifier.height(10.dp))
             DataTextField(
                 value = credentials.login,
