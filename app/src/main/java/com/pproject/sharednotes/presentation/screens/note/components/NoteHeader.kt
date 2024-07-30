@@ -1,10 +1,6 @@
 package com.pproject.sharednotes.presentation.screens.note.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.filled.Folder
@@ -19,12 +15,10 @@ import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.pproject.sharednotes.R
 import com.pproject.sharednotes.data.entity.Note
-import com.pproject.sharednotes.presentation.common.BasicIconButton
 import com.pproject.sharednotes.presentation.common.BasicIconToggleButton
 import com.pproject.sharednotes.presentation.common.Header
 import com.pproject.sharednotes.presentation.common.dialog.ConfirmationDialog

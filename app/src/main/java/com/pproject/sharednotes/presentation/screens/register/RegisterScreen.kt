@@ -37,7 +37,7 @@ data class RegisterCredentials(
 }
 
 @Composable
-fun RegisterScreen(navController: NavController){
+fun RegisterScreen(navController: NavController) {
     Surface {
         var credentials by remember { mutableStateOf(RegisterCredentials()) }
 

@@ -1,20 +1,15 @@
 package com.pproject.sharednotes.presentation.screens.folder.components
 
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.FolderDelete
 import androidx.compose.material.icons.filled.PostAdd
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
 import com.pproject.sharednotes.R
 import com.pproject.sharednotes.presentation.common.BasicIconButton
 import com.pproject.sharednotes.presentation.common.BasicIconToggleButton

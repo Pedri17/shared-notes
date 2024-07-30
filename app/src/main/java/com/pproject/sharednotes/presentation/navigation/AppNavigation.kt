@@ -30,13 +30,13 @@ fun AppNavigation() {
             route = AppScreens.NoteScreen.route + "/{noteID}",
             arguments = listOf(navArgument("noteID") { type = NavType.IntType }),
         ) { backStackEntry ->
-            backStackEntry.arguments?.getInt("noteID")?.let { NoteScreen(navController, it) }
+            backStackEntry.arguments?.getInt("noteID")?.let { NoteScreen(navController) }
         }
         composable(
             route = AppScreens.FolderScreen.route + "/{folderID}",
             arguments = listOf(navArgument("folderID") { type = NavType.IntType }),
         ) { backStackEntry ->
-            backStackEntry.arguments?.getInt("folderID")?.let { FolderScreen(navController, it) }
+            backStackEntry.arguments?.getInt("folderID")?.let { FolderScreen(navController) }
         }
         composable(route = AppScreens.HomeScreen.route) {
             HomeScreen(navController)

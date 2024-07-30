@@ -21,10 +21,8 @@ import com.pproject.sharednotes.presentation.screens.note.components.SectionsFie
 @Composable
 fun NoteScreen(
     navController: NavController,
-    noteID: Int,
     noteViewModel: NoteViewModel = viewModel(),
 ) {
-    noteViewModel.setNote(noteID)
     Surface {
         Column(
             verticalArrangement = Arrangement.Top,
@@ -35,15 +33,15 @@ fun NoteScreen(
         ) {
             NoteHeader(
                 onClickBack = { navController.popBackStack() },
-                folderId = noteViewModel.folderId,
+                folderId = noteViewModel.note.id,
                 onChangeFolder = { noteViewModel.updateFolder(it) },
                 folderList = noteViewModel.getFolderPairNames(),
                 onAddCollaborator = { noteViewModel.addCollaborator(it) },
                 onDeleteCollaborator = { noteViewModel.deleteCollaborator(it) },
-                collaboratorList = noteViewModel.collaborators,
-                isPinned = noteViewModel.pinned,
+                collaboratorList = noteViewModel.note.users,
+                isPinned = noteViewModel.note.pinned,
                 onChangePinned = { noteViewModel.updatePinned(it) },
-                situation = noteViewModel.situation,
+                situation = noteViewModel.note.situation,
                 onChangeArchive = { isArchived: Boolean ->
                     if (!isArchived) {
                         noteViewModel.updateSituation(Note.Situation.ON_USE)
@@ -60,7 +58,7 @@ fun NoteScreen(
                 }
             )
             EditableTitle(
-                value = noteViewModel.title,
+                value = noteViewModel.note.title,
                 onChange = {
                     noteViewModel.updateTitle(it)
                 },

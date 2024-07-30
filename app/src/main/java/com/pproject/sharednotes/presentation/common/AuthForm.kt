@@ -77,7 +77,7 @@ fun PasswordField(
     modifier: Modifier = Modifier,
     label: String = stringResource(R.string.password),
     placeholder: String = stringResource(R.string.enter_your_password),
-){
+) {
     var isPasswordVisible by remember { mutableStateOf(false) }
     val keyIcon = @Composable {
         Icon(
@@ -137,7 +137,7 @@ fun ClickableRouteText(
     text: String,
     route: String,
     color: Color = Color.Cyan
-){
+) {
     Text(
         text = text,
         modifier = Modifier.clickable {

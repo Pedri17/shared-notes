@@ -6,7 +6,7 @@ data class Note(
     var content: String = "",
     var pinned: Boolean = false,
     var situation: Situation = Situation.ON_USE,
-    var folder: Int = 0,
+    var folder: Int? = null,
     var users: List<String> = emptyList<String>(),
 ) {
     enum class Situation {

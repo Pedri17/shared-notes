@@ -63,7 +63,7 @@ fun LoginScreen(navController: NavController) {
                 onChange = { data -> credentials = credentials.copy(password = data) },
                 submit = {
                     if (!checkCredentials(credentials, navController.context)) {
-                        credentials = LoginCredentials();
+                        credentials = LoginCredentials()
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -85,7 +85,7 @@ fun LoginScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(20.dp))
             Button(
                 onClick = {
-                    if (!checkCredentials(credentials, navController.context)){
+                    if (!checkCredentials(credentials, navController.context)) {
                         credentials = LoginCredentials()
                         navController.navigate(AppScreens.NoteScreen.route)
                     }
@@ -107,13 +107,13 @@ fun LoginScreen(navController: NavController) {
 }
 
 private fun checkCredentials(cred: LoginCredentials, context: Context): Boolean {
-    val emailPattern: Regex = Regex("^[^.\\s][\\w\\-.{2,}]+@([\\w-]+\\.)+[\\w-]{2,}\$")
-    val passwordPattern: Regex = Regex("^(?=.*[0–9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$")
-    val userPattern: Regex = Regex("^[a-zA-Z0-9]+([._]?[a-zA-Z0-9]+)*\$")
+    val emailPattern = Regex("^[^.\\s][\\w\\-.{2,}]+@([\\w-]+\\.)+[\\w-]{2,}\$")
+    val passwordPattern = Regex("^(?=.*[0–9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$")
+    val userPattern = Regex("^[a-zA-Z0-9]+([._]?[a-zA-Z0-9]+)*\$")
 
     // Test email or username
     var validId = false
-    if (cred.isNotEmpty()){
+    if (cred.isNotEmpty()) {
         validId = if (cred.login.contains('@')) {
             emailPattern.matches(cred.login)
         } else {
@@ -122,7 +122,8 @@ private fun checkCredentials(cred: LoginCredentials, context: Context): Boolean 
     }
 
     return if (!(validId && passwordPattern.matches(cred.password))) {
-        Toast.makeText(context, context.getString(R.string.wrong_credentials), Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, context.getString(R.string.wrong_credentials), Toast.LENGTH_SHORT)
+            .show()
         false
     } else {
         true
