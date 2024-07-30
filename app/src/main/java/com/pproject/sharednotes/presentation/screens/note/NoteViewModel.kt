@@ -17,6 +17,8 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.SavedStateHandle
+import com.pproject.sharednotes.data.entity.Folder
+import com.pproject.sharednotes.data.test.getAllFolderPairNames
 import com.pproject.sharednotes.data.test.getAllUserNames
 import com.pproject.sharednotes.data.test.getAllUsers
 import com.pproject.sharednotes.data.test.getNote
@@ -74,6 +76,10 @@ class NoteViewModel : ViewModel() {
 
     fun updateFolder(newFolderId: Int?) {
         folderId = newFolderId
+    }
+
+    fun getFolderPairNames(): List<Pair<Int, String>> {
+        return getAllFolderPairNames()
     }
 
     private val _collaborators = getAllUserNames().toMutableStateList()

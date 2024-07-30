@@ -46,7 +46,7 @@ fun <T : Any> NameListSelectorDialog(
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 30.dp
             ),
-            shape = RoundedCornerShape(5.dp),
+            shape = RoundedCornerShape(1.dp),
             modifier = modifier.heightIn(max = LocalConfiguration.current.screenHeightDp.dp * 0.7f),
         ) {
             Column(

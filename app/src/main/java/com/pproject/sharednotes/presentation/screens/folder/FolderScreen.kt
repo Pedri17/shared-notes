@@ -4,20 +4,10 @@ import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.FolderDelete
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -50,8 +40,10 @@ import com.pproject.sharednotes.presentation.screens.folder.components.OnTrigger
 @Composable
 fun FolderScreen(
     navController: NavController,
-    viewModel: FolderViewModel = viewModel(),
+    folderID: Int,
+    folderViewModel: FolderViewModel = viewModel(),
 ) {
+    folderViewModel.setFolder(folderID)
     val focusRequester = remember { FocusRequester() }
     Surface {
         Column(
@@ -64,15 +56,15 @@ fun FolderScreen(
             FolderHeader(
                 onClickBack = { navController.popBackStack() },
                 onChangeCanEditTitle = {
-                    viewModel.updateCanEditTitle(it)
-                    viewModel.setTitleCursorToEnd()
+                    folderViewModel.updateCanEditTitle(it)
+                    folderViewModel.setTitleCursorToEnd()
                 },
-                canEditTitle = viewModel.titleState.canEdit,
+                canEditTitle = folderViewModel.titleState.canEdit,
                 onAddNewNote = {
                     //TODO: creación de nueva nota vacía (con esta carpeta preseleccionada) y se abra la pantalla con dicha nota
                     navController.navigate(
                         AppScreens.NoteScreen.route + "/"
-                                + viewModel.createNoteInThisFolder()
+                                + folderViewModel.createNoteInThisFolder()
                     )
                 },
                 onDeleteFolder = {
@@ -81,22 +73,23 @@ fun FolderScreen(
                 },
             )
             OnTriggerEditableTitle(
-                text = viewModel.titleState.title,
-                onChange = { viewModel.updateTitle(it) },
-                onDone = { viewModel.updateCanEditTitle(false) },
-                enabled = viewModel.titleState.canEdit,
+                text = folderViewModel.titleState.title,
+                onChange = { folderViewModel.updateTitle(it) },
+                onDone = { folderViewModel.updateCanEditTitle(false) },
+                enabled = folderViewModel.titleState.canEdit,
                 focusRequester = focusRequester,
             )
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2)
             ) {
                 items(
-                    items = viewModel.getOrderedNotes(),
+                    items = folderViewModel.getOrderedNotes(),
                     key = { it }
                 ) { noteID ->
                     NoteCard(
-                        note = viewModel.getNoteFromId(noteID),
-                        modifier = Modifier.padding(5.dp)
+                        note = folderViewModel.getNoteFromId(noteID),
+                        navController = navController,
+                        modifier = Modifier.padding(2.dp)
                     )
                 }
             }

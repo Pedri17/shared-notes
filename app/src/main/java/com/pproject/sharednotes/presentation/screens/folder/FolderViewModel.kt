@@ -3,37 +3,22 @@ package com.pproject.sharednotes.presentation.screens.folder
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
+import com.pproject.sharednotes.data.entity.Folder
 import com.pproject.sharednotes.data.entity.Note
 import com.pproject.sharednotes.data.test.addNote
 import com.pproject.sharednotes.data.test.getAllNotes
+import com.pproject.sharednotes.data.test.getFolder
 import com.pproject.sharednotes.data.test.getNote
 import com.pproject.sharednotes.presentation.screens.note.components.Section
 import com.pproject.sharednotes.presentation.screens.note.decomposeInSections
 import com.pproject.sharednotes.presentation.screens.note.testContent
-
-val testListNotes = listOf(
-    11,
-    7,
-    4,
-    12,
-    3,
-    1,
-    5,
-    10,
-    2
-)
-
-val testPinnedNotes = listOf(
-    12,
-    10,
-    11
-)
 
 data class TitleState(
     val title: TextFieldValue = TextFieldValue("New folder"),
@@ -46,7 +31,12 @@ class FolderViewModel : ViewModel() {
         private set
 
     fun setFolder(id: Int) {
+        val folder: Folder = getFolder(id) ?: Folder()
         folderID = id
+        updateTitle(folder.title)
+        updateCanEditTitle(false)
+        _notes = folder.notes.toMutableStateList()
+        _pinnedNotes = folder.pinnedNotes.toMutableStateList()
     }
 
     private var _titleState: TitleState by mutableStateOf(TitleState())
@@ -74,11 +64,11 @@ class FolderViewModel : ViewModel() {
     var user: String by mutableStateOf("")
         private set
 
-    private val _notes = testListNotes.toMutableStateList()
+    private var _notes = mutableStateListOf<Int>()
     val notes: List<Int>
         get() = _notes
 
-    private val _pinnedNotes = testPinnedNotes.toMutableStateList()
+    private var _pinnedNotes = mutableStateListOf<Int>()
 
     val pinnedNotes: List<Int>
         get() = _pinnedNotes

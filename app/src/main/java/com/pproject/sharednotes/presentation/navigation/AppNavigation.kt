@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.pproject.sharednotes.presentation.screens.folder.FolderScreen
+import com.pproject.sharednotes.presentation.screens.home.HomeScreen
 import com.pproject.sharednotes.presentation.screens.login.LoginScreen
 import com.pproject.sharednotes.presentation.screens.note.NoteScreen
 import com.pproject.sharednotes.presentation.screens.register.RegisterScreen
@@ -31,8 +32,14 @@ fun AppNavigation() {
         ) { backStackEntry ->
             backStackEntry.arguments?.getInt("noteID")?.let { NoteScreen(navController, it) }
         }
-        composable(route = AppScreens.FolderScreen.route) {
-            FolderScreen(navController)
+        composable(
+            route = AppScreens.FolderScreen.route + "/{folderID}",
+            arguments = listOf(navArgument("folderID") { type = NavType.IntType }),
+        ) { backStackEntry ->
+            backStackEntry.arguments?.getInt("folderID")?.let { FolderScreen(navController, it) }
+        }
+        composable(route = AppScreens.HomeScreen.route) {
+            HomeScreen(navController)
         }
     }
 }
