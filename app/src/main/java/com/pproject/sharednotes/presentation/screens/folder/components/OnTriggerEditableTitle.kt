@@ -25,6 +25,8 @@ fun OnTriggerEditableTitle(
     onDone: () -> Unit,
     enabled: Boolean,
     focusRequester: FocusRequester,
+    modifier: Modifier = Modifier,
+    onEmptyText: (() -> Unit)? = null
 ) {
     TextField(
         value = text,
@@ -55,7 +57,10 @@ fun OnTriggerEditableTitle(
             .fillMaxWidth()
             .focusRequester(focusRequester),
     )
-    LaunchedEffect(enabled) {
+    LaunchedEffect(enabled, onEmptyText, text) {
+        if (onEmptyText != null && text.text == "") {
+            onEmptyText()
+        }
         if (enabled) {
             focusRequester.requestFocus()
         }

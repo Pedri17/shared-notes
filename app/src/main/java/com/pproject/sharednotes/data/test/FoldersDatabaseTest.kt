@@ -38,3 +38,47 @@ fun getFolder(id: Int): Folder? {
     }
     return null
 }
+
+fun createFolder(): Int {
+    val newFolder = Folder(testfolders.size)
+    testfolders = testfolders.plus(
+        newFolder
+    )
+    return newFolder.id
+}
+
+fun editFolder(updatedFolder: Folder): Boolean {
+    for (folder in getAllFolders()) {
+        if (folder.id == updatedFolder.id) {
+            folder.title = updatedFolder.title
+            folder.notes = updatedFolder.notes
+            folder.pinnedNotes = updatedFolder.pinnedNotes
+            return true
+        }
+    }
+    return false
+}
+
+fun updateFolderTitle(folderID: Int, newTitle: TextFieldValue) {
+    for (folder in getAllFolders()) {
+        if (folder.id == folderID) {
+            folder.title = newTitle
+        }
+    }
+}
+
+fun updateFolderNotes(folderID: Int, notes: List<Int>) {
+    for (folder in getAllFolders()) {
+        if (folder.id == folderID) {
+            folder.notes = notes
+        }
+    }
+}
+
+fun updateFolderPinnedNotes(folderID: Int, pinnedNotes: List<Int>) {
+    for (folder in getAllFolders()) {
+        if (folder.id == folderID) {
+            folder.pinnedNotes = pinnedNotes
+        }
+    }
+}

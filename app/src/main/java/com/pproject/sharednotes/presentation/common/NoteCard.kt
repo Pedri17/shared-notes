@@ -36,14 +36,11 @@ fun NoteCard(
     note: Note,
     navController: NavController,
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.tertiaryContainer,
+    color: Color = MaterialTheme.colorScheme.secondaryContainer,
 ) {
     Surface(
         onClick = {
-            navController.navigate(
-                AppScreens.NoteScreen.route + "/"
-                        + note.id
-            )
+            navController.navigate("${AppScreens.NoteScreen.route}/${note.id}")
         },
         shape = RoundedCornerShape(15.dp),
     ) {

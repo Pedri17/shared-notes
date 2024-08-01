@@ -1,5 +1,6 @@
 package com.pproject.sharednotes.presentation.screens.note.components
 
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Delete
@@ -19,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.pproject.sharednotes.R
 import com.pproject.sharednotes.data.entity.Note
 import com.pproject.sharednotes.presentation.common.BackNavigationHeader

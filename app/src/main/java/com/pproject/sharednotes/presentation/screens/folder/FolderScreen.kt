@@ -43,7 +43,6 @@ fun FolderScreen(
                 },
                 canEditTitle = folderViewModel.canEditTitle,
                 onAddNewNote = {
-                    //TODO: creación de nueva nota vacía (con esta carpeta preseleccionada) y se abra la pantalla con dicha nota
                     navController.navigate(
                         AppScreens.NoteScreen.route + "/"
                                 + folderViewModel.createNoteInThisFolder()
@@ -58,6 +57,7 @@ fun FolderScreen(
                 text = folderViewModel.folder.title,
                 onChange = { folderViewModel.updateTitle(it) },
                 onDone = { folderViewModel.updateCanEditTitle(false) },
+                onEmptyText = { folderViewModel.updateCanEditTitle(true) },
                 enabled = folderViewModel.canEditTitle,
                 focusRequester = focusRequester,
             )

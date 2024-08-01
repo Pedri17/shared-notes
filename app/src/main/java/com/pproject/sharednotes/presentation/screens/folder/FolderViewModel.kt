@@ -10,9 +10,12 @@ import androidx.lifecycle.ViewModel
 import com.pproject.sharednotes.data.entity.Folder
 import com.pproject.sharednotes.data.entity.Note
 import com.pproject.sharednotes.data.test.addNote
+import com.pproject.sharednotes.data.test.editFolder
 import com.pproject.sharednotes.data.test.getAllNotes
 import com.pproject.sharednotes.data.test.getFolder
 import com.pproject.sharednotes.data.test.getNote
+import com.pproject.sharednotes.data.test.updateFolderNotes
+import com.pproject.sharednotes.data.test.updateFolderTitle
 
 class FolderViewModel(
     savedStateHandle: SavedStateHandle,
@@ -27,6 +30,7 @@ class FolderViewModel(
 
     fun updateTitle(newTitle: TextFieldValue) {
         folder = folder.copy(title = newTitle)
+        updateFolderTitle(folder.id, newTitle)
     }
 
     fun setTitleCursorToEnd() {
@@ -65,6 +69,12 @@ class FolderViewModel(
             folder = folder.id,
         )
         addNote(newNote)
+        folder.notes = folder.notes.plus(newNote.id)
+        updateFolderNotes(folder.id, folder.notes)
         return newNote.id
+    }
+
+    fun updateFolder(updatedFolder: Folder) {
+        editFolder(updatedFolder)
     }
 }
