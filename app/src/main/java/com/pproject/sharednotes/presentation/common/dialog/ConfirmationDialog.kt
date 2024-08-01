@@ -77,17 +77,17 @@ fun ConfirmationDialog(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     TextButton(
+                        onClick = onClose
+                    ) {
+                        Text(stringResource(R.string.no))
+                    }
+                    TextButton(
                         onClick = {
                             onConfirm()
                             onClose()
                         }
                     ) {
                         Text(stringResource(R.string.yes))
-                    }
-                    TextButton(
-                        onClick = onClose
-                    ) {
-                        Text(stringResource(R.string.no))
                     }
                 }
             }

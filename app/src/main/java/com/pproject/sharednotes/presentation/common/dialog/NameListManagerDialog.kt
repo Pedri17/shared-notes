@@ -3,6 +3,7 @@ package com.pproject.sharednotes.presentation.common.dialog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -48,11 +49,12 @@ data class ToAddElementState(
 @Composable
 fun <T : Any> NameListManagerDialog(
     list: List<Pair<T, String>>,
+    headerTitle: String,
     icon: ImageVector,
     modifier: Modifier = Modifier,
-    onAddElement: ((String) -> Unit)?,
-    onDeleteElement: ((T) -> Unit)?,
-    onEditElement: ((T) -> Unit)?,
+    onAddElement: ((String) -> Unit)? = null,
+    onDeleteElement: ((T) -> Unit)? = null,
+    onEditElement: ((T) -> Unit)? = null,
     onCloseDialog: () -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
@@ -61,6 +63,83 @@ fun <T : Any> NameListManagerDialog(
 
     var toAddElementState by remember { mutableStateOf(ToAddElementState()) }
 
+    FullScreenDialog<Unit>(
+        onCloseDialog = onCloseDialog,
+        headerTitle = headerTitle,
+        modifier = modifier,
+    ) {
+        LazyColumn(
+            state = columnState,
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .padding(horizontal = 20.dp, vertical = 20.dp)
+        ) {
+            items(
+                items = list,
+                key = { it.first }
+            ) { element ->
+                ManageableTitleElement(
+                    text = element.second,
+                    icon = icon,
+                    onEdit = if (onEditElement != null) {
+                        { onEditElement(element.first) }
+                    } else {
+                        null
+                    },
+                    onDelete = if (onDeleteElement != null) {
+                        { onDeleteElement(element.first) }
+                    } else {
+                        null
+                    },
+                )
+            }
+            if (onAddElement != null && toAddElementState.isActive) {
+                item {
+                    ToAddTitleElement(
+                        toEditText = toAddElementState.name,
+                        onChange = {
+                            toAddElementState = toAddElementState.copy(name = it)
+                        },
+                        icon = Icons.Default.Person,
+                        modifier = Modifier.focusRequester(focusRequester),
+                        onDone = {
+                            onAddElement(toAddElementState.name)
+                            toAddElementState = ToAddElementState()
+                            coroutineScope.launch {
+                                columnState.animateScrollToItem(list.size)
+                            }
+                        },
+                    )
+                    LaunchedEffect(Unit) {
+                        focusRequester.requestFocus()
+                    }
+                }
+            }
+        }
+        if (onAddElement != null && !toAddElementState.isActive) {
+            LargeFloatingActionButton(
+                shape = FloatingActionButtonDefaults.largeShape,
+                onClick = {
+                    toAddElementState = toAddElementState.copy(isActive = true)
+                    coroutineScope.launch {
+                        columnState.animateScrollToItem(list.size)
+                    }
+                },
+                modifier = Modifier
+                    .size(50.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = null,
+                    modifier = Modifier.size(FloatingActionButtonDefaults.LargeIconSize)
+                )
+            }
+        }
+    }
+}
+
+    /*
     Dialog(
         onDismissRequest = onCloseDialog
     ) {
@@ -80,76 +159,7 @@ fun <T : Any> NameListManagerDialog(
                     verticalArrangement = Arrangement.Top,
                     modifier = Modifier.weight(0.9f),
                 ) {
-                    LazyColumn(
-                        state = columnState,
-                        verticalArrangement = Arrangement.Top,
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .padding(horizontal = 20.dp, vertical = 20.dp)
-                            .weight(0.9f),
-                    ) {
-                        items(
-                            items = list,
-                            key = { it.first }
-                        ) { element ->
-                            ManageableTitleElement(
-                                text = element.second,
-                                icon = icon,
-                                onEdit = if (onEditElement != null) {
-                                    { onEditElement(element.first) }
-                                } else {
-                                    null
-                                },
-                                onDelete = if (onDeleteElement != null) {
-                                    { onDeleteElement(element.first) }
-                                } else {
-                                    null
-                                },
-                            )
-                        }
-                        if (onAddElement != null && toAddElementState.isActive) {
-                            item {
-                                ToAddTitleElement(
-                                    toEditText = toAddElementState.name,
-                                    onChange = {
-                                        toAddElementState = toAddElementState.copy(name = it)
-                                    },
-                                    icon = Icons.Default.Person,
-                                    modifier = Modifier.focusRequester(focusRequester),
-                                    onDone = {
-                                        onAddElement(toAddElementState.name)
-                                        toAddElementState = ToAddElementState()
-                                        coroutineScope.launch {
-                                            columnState.animateScrollToItem(list.size)
-                                        }
-                                    },
-                                )
-                                LaunchedEffect(Unit) {
-                                    focusRequester.requestFocus()
-                                }
-                            }
-                        }
-                    }
-                    if (onAddElement != null && !toAddElementState.isActive) {
-                        LargeFloatingActionButton(
-                            shape = FloatingActionButtonDefaults.largeShape,
-                            onClick = {
-                                toAddElementState = toAddElementState.copy(isActive = true)
-                                coroutineScope.launch {
-                                    columnState.animateScrollToItem(list.size)
-                                }
-                            },
-                            modifier = Modifier
-                                .size(50.dp)
-                                .weight(0.1f),
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Add,
-                                contentDescription = null,
-                                modifier = Modifier.size(FloatingActionButtonDefaults.LargeIconSize)
-                            )
-                        }
-                    }
+
                 }
                 Row(
                     horizontalArrangement = Arrangement.End,
@@ -169,4 +179,4 @@ fun <T : Any> NameListManagerDialog(
             }
         }
     }
-}
+     */

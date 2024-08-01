@@ -27,16 +27,22 @@ fun AppNavigation() {
             RegisterScreen(navController)
         }
         composable(
-            route = AppScreens.NoteScreen.route + "/{noteID}",
-            arguments = listOf(navArgument("noteID") { type = NavType.IntType }),
+            route = "${AppScreens.NoteScreen.route}/{${AppScreens.NoteScreen.argument}}",
+            arguments = listOf(navArgument(AppScreens.NoteScreen.argument) {
+                type = NavType.IntType
+            }),
         ) { backStackEntry ->
-            backStackEntry.arguments?.getInt("noteID")?.let { NoteScreen(navController) }
+            backStackEntry.arguments?.getInt(AppScreens.NoteScreen.argument)
+                ?.let { NoteScreen(navController) }
         }
         composable(
-            route = AppScreens.FolderScreen.route + "/{folderID}",
-            arguments = listOf(navArgument("folderID") { type = NavType.IntType }),
+            route = "${AppScreens.FolderScreen.route}/{${AppScreens.FolderScreen.argument}}",
+            arguments = listOf(navArgument(AppScreens.FolderScreen.argument) {
+                type = NavType.IntType
+            }),
         ) { backStackEntry ->
-            backStackEntry.arguments?.getInt("folderID")?.let { FolderScreen(navController) }
+            backStackEntry.arguments?.getInt(AppScreens.FolderScreen.argument)
+                ?.let { FolderScreen(navController) }
         }
         composable(route = AppScreens.HomeScreen.route) {
             HomeScreen(navController)

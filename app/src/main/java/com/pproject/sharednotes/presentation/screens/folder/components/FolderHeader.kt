@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.pproject.sharednotes.R
+import com.pproject.sharednotes.presentation.common.BackNavigationHeader
 import com.pproject.sharednotes.presentation.common.BasicIconButton
 import com.pproject.sharednotes.presentation.common.BasicIconToggleButton
 import com.pproject.sharednotes.presentation.common.Header
@@ -26,7 +27,7 @@ fun FolderHeader(
     modifier: Modifier = Modifier,
 ) {
     val openDeleteDialog = remember { mutableStateOf(false) }
-    Header(
+    BackNavigationHeader(
         onClickBack = onClickBack,
         modifier = modifier,
     ) {

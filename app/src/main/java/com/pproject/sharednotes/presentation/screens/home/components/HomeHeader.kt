@@ -16,27 +16,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pproject.sharednotes.R
+import com.pproject.sharednotes.presentation.common.Header
 
 @Composable
 fun HomeHeader(
     modifier: Modifier = Modifier,
 ) {
     Column {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = modifier
-                .height(55.dp)
-                .fillMaxWidth()
-        ) {
-            Text(
-                text = stringResource(R.string.app_name),
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(10.dp)
-            )
-        }
+        Header(
+            modifier = modifier,
+            leftComponent = {
+                Text(
+                    text = stringResource(R.string.app_name),
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(10.dp)
+                )
+            },
+            rightComponent = {},
+        )
+        Divider(
+            color = MaterialTheme.colorScheme.inverseOnSurface
+        )
     }
-    Divider(
-        color = MaterialTheme.colorScheme.inverseOnSurface
-    )
 }

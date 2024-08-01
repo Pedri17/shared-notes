@@ -4,12 +4,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Unarchive
 import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.PersonAdd
 import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.runtime.Composable
@@ -19,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.pproject.sharednotes.R
 import com.pproject.sharednotes.data.entity.Note
+import com.pproject.sharednotes.presentation.common.BackNavigationHeader
 import com.pproject.sharednotes.presentation.common.BasicIconToggleButton
 import com.pproject.sharednotes.presentation.common.Header
 import com.pproject.sharednotes.presentation.common.dialog.ConfirmationDialog
@@ -29,15 +32,12 @@ import com.pproject.sharednotes.presentation.common.dialog.NameListSelectorDialo
 @Composable
 fun NoteHeader(
     onClickBack: () -> Unit,
-    folderId: Int?,
+    note: Note,
     folderList: List<Pair<Int, String>>,
     onChangeFolder: (Int?) -> Unit,
     onAddCollaborator: (String) -> Unit,
     onDeleteCollaborator: (String) -> Unit,
-    collaboratorList: List<String>,
-    isPinned: Boolean,
     onChangePinned: (Boolean) -> Unit,
-    situation: Note.Situation,
     onChangeArchive: (Boolean) -> Unit,
     onChangeDelete: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
@@ -46,38 +46,38 @@ fun NoteHeader(
     val openConfirmDeleteDialog = remember { mutableStateOf(false) }
     val openCollaboratorsDialog = remember { mutableStateOf(false) }
 
-    Header(
+    BackNavigationHeader(
         onClickBack = onClickBack,
         modifier = modifier
     ) {
         BasicIconToggleButton(
             icon = Icons.Outlined.Folder,
             toggledIcon = Icons.Default.Folder,
-            isToggled = folderId != null,
+            isToggled = note.folder != null,
             onChange = { openFolderDialog.value = true },
         )
         BasicIconToggleButton(
             icon = Icons.Outlined.PersonAdd,
             toggledIcon = Icons.Default.PersonAdd,
-            isToggled = collaboratorList.isNotEmpty(),
+            isToggled = note.users.isNotEmpty(),
             onChange = { openCollaboratorsDialog.value = true },
         )
         BasicIconToggleButton(
             icon = Icons.Outlined.PushPin,
             toggledIcon = Icons.Default.PushPin,
-            isToggled = isPinned,
+            isToggled = note.pinned,
             onChange = onChangePinned,
         )
         BasicIconToggleButton(
             icon = Icons.Outlined.Archive,
             toggledIcon = Icons.Default.Unarchive,
-            isToggled = situation == Note.Situation.ARCHIVED,
+            isToggled = note.situation == Note.Situation.ARCHIVED,
             onChange = onChangeArchive,
         )
         BasicIconToggleButton(
             icon = Icons.Outlined.Delete,
             toggledIcon = Icons.Default.Delete,
-            isToggled = situation == Note.Situation.DELETED,
+            isToggled = note.situation == Note.Situation.DELETED,
             onChange = { openConfirmDeleteDialog.value = true },
         )
     }
@@ -86,14 +86,15 @@ fun NoteHeader(
         NameListSelectorDialog(
             list = folderList,
             icon = Icons.Default.Folder,
+            headerTitle = "Folder",
             noneSelectionIcon = Icons.Outlined.Folder,
-            selectedId = folderId,
+            selectedId = note.folder,
             onCloseDialog = { openFolderDialog.value = false },
-            onAcceptDialog = onChangeFolder,
+            onSaveDialog = onChangeFolder,
         )
     }
     if (openConfirmDeleteDialog.value) {
-        if (situation == Note.Situation.DELETED) {
+        if (note.situation == Note.Situation.DELETED) {
             ConfirmationDialog(
                 message = stringResource(R.string.do_you_want_to_restore_this_note),
                 onClose = { openConfirmDeleteDialog.value = false },
@@ -110,20 +111,20 @@ fun NoteHeader(
     }
     if (openCollaboratorsDialog.value) {
         NameListManagerDialog(
-            list = stringToPair(collaboratorList),
+            list = stringToPair(note.users),
+            headerTitle = "Collaborators",
             icon = Icons.Default.Person,
             onAddElement = onAddCollaborator,
             onDeleteElement = onDeleteCollaborator,
-            onEditElement = null,
             onCloseDialog = { openCollaboratorsDialog.value = false }
         )
     }
 }
 
 fun stringToPair(list: List<String>): List<Pair<String, String>> {
-    var result: List<Pair<String, String>> = emptyList()
+    val result: MutableList<Pair<String, String>> = mutableListOf()
     for (item in list) {
-        result = result.plus(Pair(item, item))
+        result.add(Pair(item, item))
     }
-    return result
+    return result.toList()
 }

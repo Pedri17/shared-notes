@@ -20,4 +20,5 @@
     <string name="cancel">Cancel</string>
     <string name="do_you_want_to_delete_permanently_this_folder">Do you want to delete permanently this folder?</string>
     <string name="notes_will_not_be_deleted_but_will_remain_without_an_assigned_folder">Notes will not be deleted but will remain without an assigned folder.</string>
+    <string name="save">Save</string>
 </resources>
