@@ -28,7 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.pproject.sharednotes.data.entity.Note
+import com.pproject.sharednotes.data.db.entity.Note
 import com.pproject.sharednotes.presentation.navigation.AppScreens
 
 @Composable
@@ -40,7 +40,7 @@ fun NoteCard(
 ) {
     Surface(
         onClick = {
-            navController.navigate("${AppScreens.NoteScreen.route}/${note.id}")
+            navController.navigate("${AppScreens.NoteScreen.route}/${note.noteId}")
         },
         shape = RoundedCornerShape(15.dp),
     ) {

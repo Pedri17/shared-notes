@@ -5,22 +5,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.outlined.Palette
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.pproject.sharednotes.data.entity.Note
-import com.pproject.sharednotes.presentation.common.BasicIconToggleButton
+import com.pproject.sharednotes.data.db.entity.Note
 import com.pproject.sharednotes.presentation.screens.note.components.EditableTitle
-import com.pproject.sharednotes.presentation.screens.note.components.NoteBottomBar
 import com.pproject.sharednotes.presentation.screens.note.components.NoteHeader
 import com.pproject.sharednotes.presentation.screens.note.components.Section
 import com.pproject.sharednotes.presentation.screens.note.components.SectionsField
@@ -28,17 +23,21 @@ import com.pproject.sharednotes.presentation.screens.note.components.SectionsFie
 @Composable
 fun NoteScreen(
     navController: NavController,
-    noteViewModel: NoteViewModel = viewModel(),
+    noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory),
 ) {
+    val users by noteViewModel.users.observeAsState(emptyList())
+    val note by noteViewModel.note.observeAsState(Note())
+    val folderPairNames by noteViewModel.allPairNameFolders.observeAsState(emptyList())
     Surface {
         Scaffold(
             topBar = {
                 NoteHeader(
                     onClickBack = { navController.popBackStack() },
-                    note = noteViewModel.note,
+                    note = note,
+                    users = users,
                     onChangeFolder = { noteViewModel.updateFolder(it) },
-                    folderList = noteViewModel.getFolderPairNames(),
-                    onAddCollaborator = { noteViewModel.addCollaborator(it) },
+                    folderList = folderPairNames,
+                    onAddCollaborator = { noteViewModel.insertCollaborator(it) },
                     onDeleteCollaborator = { noteViewModel.deleteCollaborator(it) },
                     onChangePinned = { noteViewModel.updatePinned(it) },
                     onChangeArchive = { isArchived: Boolean ->
@@ -66,7 +65,7 @@ fun NoteScreen(
                     .padding(innerPadding)
             ) {
                 EditableTitle(
-                    value = noteViewModel.note.title,
+                    value = note.title,
                     onChange = { noteViewModel.updateTitle(it) },
                     modifier = Modifier
                         .fillMaxWidth(),

@@ -1,18 +1,15 @@
 package com.pproject.sharednotes.presentation.screens.note.components
 
-import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Unarchive
 import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.Folder
-import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.PersonAdd
 import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.runtime.Composable
@@ -20,12 +17,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.pproject.sharednotes.R
-import com.pproject.sharednotes.data.entity.Note
+import com.pproject.sharednotes.data.db.entity.Note
 import com.pproject.sharednotes.presentation.common.BackNavigationHeader
 import com.pproject.sharednotes.presentation.common.BasicIconToggleButton
-import com.pproject.sharednotes.presentation.common.Header
 import com.pproject.sharednotes.presentation.common.dialog.ConfirmationDialog
 import com.pproject.sharednotes.presentation.common.dialog.NameListManagerDialog
 import com.pproject.sharednotes.presentation.common.dialog.NameListSelectorDialog
@@ -35,6 +30,7 @@ import com.pproject.sharednotes.presentation.common.dialog.NameListSelectorDialo
 fun NoteHeader(
     onClickBack: () -> Unit,
     note: Note,
+    users: List<String>,
     folderList: List<Pair<Int, String>>,
     onChangeFolder: (Int?) -> Unit,
     onAddCollaborator: (String) -> Unit,
@@ -61,7 +57,7 @@ fun NoteHeader(
         BasicIconToggleButton(
             icon = Icons.Outlined.PersonAdd,
             toggledIcon = Icons.Default.PersonAdd,
-            isToggled = note.users.isNotEmpty(),
+            isToggled = users.isNotEmpty(),
             onChange = { openCollaboratorsDialog.value = true },
         )
         BasicIconToggleButton(
@@ -113,7 +109,7 @@ fun NoteHeader(
     }
     if (openCollaboratorsDialog.value) {
         NameListManagerDialog(
-            list = stringToPair(note.users),
+            list = stringToPair(users),
             headerTitle = "Collaborators",
             icon = Icons.Default.Person,
             onAddElement = onAddCollaborator,

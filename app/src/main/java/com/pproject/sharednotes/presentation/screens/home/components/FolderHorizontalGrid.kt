@@ -1,30 +1,42 @@
 package com.pproject.sharednotes.presentation.screens.home.components
 
+import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.PostAdd
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.pproject.sharednotes.data.entity.Folder
-import com.pproject.sharednotes.data.entity.Note
+import com.pproject.sharednotes.data.db.entity.Folder
+import com.pproject.sharednotes.data.db.entity.Note
+import com.pproject.sharednotes.presentation.common.BasicIconButton
 import com.pproject.sharednotes.presentation.common.NoteCard
 import com.pproject.sharednotes.presentation.navigation.AppScreens
 
 @Composable
 fun FolderHorizontalGrid(
     folder: Folder,
+    notes: List<Note>,
     navController: NavController,
-    onGetNote: (Int) -> Note,
+    onCreateNote: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -33,24 +45,46 @@ fun FolderHorizontalGrid(
         shape = RoundedCornerShape(10.dp),
         onClick = {
             navController.navigate(
-                AppScreens.FolderScreen.route + "/" + folder.id
+                "${AppScreens.FolderScreen.route}/${folder.folderId}"
             )
         }
     ) {
         Column {
-            Text(
-                text = folder.title.text,
-                fontSize = 20.sp,
-            )
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Folder,
+                        contentDescription = null,
+                    )
+                    Spacer(modifier = Modifier.padding(horizontal = 6.dp))
+                    Text(
+                        text = folder.title,
+                        fontSize = 20.sp,
+                    )
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    BasicIconButton(
+                        icon = Icons.Default.PostAdd,
+                        onClick = { onCreateNote(folder.folderId) },
+                    )
+                }
+            }
             Divider()
             LazyRow(
                 modifier = Modifier.height(200.dp),
             ) {
                 items(
-                    items = folder.getOrderedNotes()
+                    items = notes,
                 ) {
                     NoteCard(
-                        note = onGetNote(it),
+                        note = it,
                         navController = navController,
                         modifier = Modifier.padding(2.dp),
                     )

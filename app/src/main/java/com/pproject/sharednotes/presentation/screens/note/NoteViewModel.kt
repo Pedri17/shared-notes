@@ -1,68 +1,109 @@
 package com.pproject.sharednotes.presentation.screens.note
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.pproject.sharednotes.data.entity.Note
+import com.pproject.sharednotes.data.db.entity.Note
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
-import com.pproject.sharednotes.data.test.getAllFolderPairNames
-import com.pproject.sharednotes.data.test.getNote
+import androidx.lifecycle.SavedStateViewModelFactory
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.pproject.sharednotes.app.SharedNotesApplication
+import com.pproject.sharednotes.data.repository.FolderRepository
+import com.pproject.sharednotes.data.repository.NoteRepository
+import com.pproject.sharednotes.presentation.navigation.AppScreens
+import com.pproject.sharednotes.presentation.screens.folder.FolderViewModel
 import com.pproject.sharednotes.presentation.screens.note.components.Section
+import kotlinx.coroutines.launch
 
 class NoteViewModel(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle = SavedStateHandle(),
+    private val noteRepository: NoteRepository,
+    private val folderRepository: FolderRepository,
 ) : ViewModel() {
-    var note by mutableStateOf(
-        getNote(checkNotNull(savedStateHandle["noteID"])) ?: Note()
-    )
-        private set
+    private val openNoteId: Int = checkNotNull(savedStateHandle[AppScreens.NoteScreen.argument])
+    val allPairNameFolders = folderRepository.getAllPairNames().asLiveData()
 
-    private var _content = decomposeInSections(note.content).toMutableStateList()
+    val note: LiveData<Note> =
+        checkNotNull(noteRepository.getById(openNoteId).asLiveData())
+
+    val users: LiveData<List<String>> =
+        checkNotNull(noteRepository.getUserIdsById(openNoteId).asLiveData())
+
+    private var _content =
+        note.value?.let { decomposeInSections(it.content).toMutableStateList() }
+            ?: emptyList<Section>().toMutableStateList()
     val content: List<Section>
-        get() = _content
+        get() = _content.toList()
 
-    fun updateTitle(newTitle: String) {
-        note = note.copy(title = newTitle)
+    fun updateTitle(newTitle: String) = viewModelScope.launch {
+        note.value?.let { noteRepository.update(it.copy(title = newTitle)) }
     }
 
-    private fun updateContent(newContent: String) {
+    private fun updateContent(newContent: String) = viewModelScope.launch {
         _content = decomposeInSections(newContent).toMutableStateList()
+        note.value?.let { noteRepository.update(it.copy(content = newContent)) }
     }
 
-    fun updateContent(section: Section, newText: String) {
+    fun updateContent(section: Section, newText: String) = viewModelScope.launch {
         _content[_content.indexOf(section)] = section.copy(text = newText)
     }
 
-    fun updatePinned(newPinned: Boolean) {
-        note = note.copy(pinned = newPinned)
+    fun updatePinned(newPinned: Boolean) = viewModelScope.launch {
+        //TODO: poner en pinned en sus carpetas
+        note.value?.let { noteRepository.update(it.copy(pinned = newPinned)) }
     }
 
-    fun updateSituation(newSituation: Note.Situation) {
-        note = note.copy(situation = newSituation)
+    fun updateSituation(newSituation: Note.Situation) = viewModelScope.launch {
+        note.value?.let { noteRepository.update(it.copy(situation = newSituation)) }
     }
 
-    fun updateFolder(newFolderId: Int?) {
-        note = note.copy(folder = newFolderId)
-    }
-
-    fun getFolderPairNames(): List<Pair<Int, String>> {
-        return getAllFolderPairNames()
-    }
-
-    fun addCollaborator(collaboratorName: String): Boolean {
-        if (!note.users.contains(collaboratorName)) {
-            note.users = note.users.plus(collaboratorName)
+    fun updateFolder(newFolderId: Int?) = viewModelScope.launch {
+        note.value?.let {
+            if (newFolderId != null) {
+                folderRepository.insertNoteInFolder(it.noteId, newFolderId)
+            } else {
+                // TODO: delete folder for this user
+            }
         }
-        return !note.users.contains(collaboratorName)
     }
 
-    fun deleteCollaborator(collaboratorName: String): Boolean {
-        if (note.users.contains(collaboratorName)) {
-            note.users = note.users.minus(collaboratorName)
+    fun insertCollaborator(collaboratorName: String) = viewModelScope.launch {
+        users.value?.let { noteRepository.insertUserInNote(openNoteId, collaboratorName) }
+    }
+
+    fun deleteCollaborator(collaboratorName: String) = viewModelScope.launch {
+        users.value?.let { noteRepository.deleteUserInNote(openNoteId, collaboratorName) }
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(
+                modelClass: Class<T>,
+                extras: CreationExtras
+            ): T {
+                val application = checkNotNull(extras[APPLICATION_KEY]) as SharedNotesApplication
+                val savedStateHandle = extras.createSavedStateHandle()
+
+                return NoteViewModel(
+                    savedStateHandle,
+                    folderRepository = application.container.folderRepository,
+                    noteRepository = application.container.noteRepository,
+                ) as T
+            }
         }
-        return note.users.contains(collaboratorName)
     }
 }
 

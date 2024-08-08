@@ -7,7 +7,7 @@ sealed class AppScreens(
     data object SplashScreen : AppScreens("splash_screen")
     data object LoginScreen : AppScreens("login_screen")
     data object RegisterScreen : AppScreens("register_screen")
-    data object NoteScreen : AppScreens("note_screen", "noteID")
-    data object FolderScreen : AppScreens("folder_screen", "folderID")
+    data object NoteScreen : AppScreens("note_screen", "noteId")
+    data object FolderScreen : AppScreens("folder_screen", "folderId")
     data object HomeScreen : AppScreens("home_screen")
 }
