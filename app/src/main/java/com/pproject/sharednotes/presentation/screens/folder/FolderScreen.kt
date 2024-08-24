@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
@@ -33,10 +34,11 @@ fun FolderScreen(
     val focusRequester = remember { FocusRequester() }
     val folder by folderViewModel.folderWithNotes.observeAsState(
         FolderWithNotes(
-            Folder(),
+            Folder(userName = ""),
             emptyList()
         )
     )
+    val orderedNotes by folderViewModel.orderedNotes.observeAsState(emptyList())
     Surface {
         Column(
             verticalArrangement = Arrangement.Top,
@@ -47,10 +49,8 @@ fun FolderScreen(
         ) {
             FolderHeader(
                 onClickBack = { navController.popBackStack() },
-                onChangeCanEditTitle = {
-                    folderViewModel.updateCanEditTitle(it)
-                },
-                canEditTitle = folderViewModel.canEditTitle,
+                onChangeCanEditTitle = { folderViewModel.updateCanEditTitle(it) },
+                canEditTitle = folderViewModel.uiState.canEditTitle,
                 onAddNewNote = { folderViewModel.createNoteInThisFolder(navController) },
                 onDeleteFolder = {
                     folderViewModel.deleteFolder()
@@ -58,28 +58,36 @@ fun FolderScreen(
                 },
             )
             OnTriggerEditableTitle(
-                text = folderViewModel.textFieldValueTitle,
+                text = folderViewModel.uiState.title,
                 onChange = { folderViewModel.updateTitle(it) },
-                onDone = {
-                    folderViewModel.updateCanEditTitle(false)
+                onDone = { folderViewModel.updateCanEditTitle(false) },
+                isNewFolder = folderViewModel.isNewFolder,
+                onNewFolder = {
+                    folderViewModel.updateCanEditTitle(true)
+                    folderViewModel.updateIsNewFolder(false)
                 },
-                onEmptyText = { folderViewModel.updateCanEditTitle(true) },
-                enabled = folderViewModel.canEditTitle,
-                focusRequester = focusRequester,
+                enabled = folderViewModel.uiState.canEditTitle,
+                focusRequester = focusRequester
             )
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2)
             ) {
                 items(
-                    items = folder.notes,
+                    items = orderedNotes,
                 ) { note ->
                     NoteCard(
                         note = note,
+                        activeUser = folderViewModel.activeUser,
                         navController = navController,
                         modifier = Modifier.padding(2.dp)
                     )
                 }
             }
+        }
+    }
+    LaunchedEffect(folder) {
+        if (folderViewModel.uiState.isEmpty()) {
+            folderViewModel.loadFolder()
         }
     }
 }

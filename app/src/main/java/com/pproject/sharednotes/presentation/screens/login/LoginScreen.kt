@@ -14,6 +14,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,29 +23,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.pproject.sharednotes.R
-import com.pproject.sharednotes.presentation.common.ClickableRouteText
-import com.pproject.sharednotes.presentation.common.LabeledCheckbox
-import com.pproject.sharednotes.presentation.common.DataTextField
-import com.pproject.sharednotes.presentation.common.PasswordField
+import com.pproject.sharednotes.presentation.common.authentication.ClickableRouteText
+import com.pproject.sharednotes.presentation.common.authentication.DataTextField
+import com.pproject.sharednotes.presentation.common.authentication.PasswordField
 import com.pproject.sharednotes.presentation.navigation.AppScreens
-
-data class LoginCredentials(
-    var login: String = "",
-    var password: String = "",
-    var remember: Boolean = false
-) {
-    fun isNotEmpty(): Boolean {
-        return login.isNotEmpty() && password.isNotEmpty()
-    }
-}
+import com.pproject.sharednotes.presentation.screens.login.components.LabeledCheckbox
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(
+    navController: NavController,
+    loginViewModel: LoginViewModel = viewModel(factory = LoginViewModel.Factory),
+) {
+    LaunchedEffect(navController) {
+        loginViewModel.tryLogOnActiveUser(navController)
+    }
     Surface {
-        var credentials by remember { mutableStateOf(LoginCredentials()) }
-
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -54,43 +50,28 @@ fun LoginScreen(navController: NavController) {
         ) {
             Spacer(modifier = Modifier.height(10.dp))
             DataTextField(
-                value = credentials.login,
-                onChange = { data -> credentials = credentials.copy(login = data) },
+                value = loginViewModel.uiState.username,
+                onChange = { loginViewModel.updateUsername(it) },
                 modifier = Modifier.fillMaxWidth()
             )
             PasswordField(
-                value = credentials.password,
-                onChange = { data -> credentials = credentials.copy(password = data) },
-                submit = {
-                    if (!checkCredentials(credentials, navController.context)) {
-                        credentials = LoginCredentials()
-                    }
-                },
+                value = loginViewModel.uiState.password,
+                onChange = { loginViewModel.updatePassword(it) },
+                submit = {},
                 modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            ClickableRouteText(
-                navController = navController,
-                text = stringResource(R.string.login),
-                route = AppScreens.SplashScreen.route
             )
             Spacer(modifier = Modifier.height(10.dp))
             LabeledCheckbox(
                 label = stringResource(R.string.remember_me),
                 onCheckChanged = {
-                    credentials = credentials.copy(remember = !credentials.remember)
+                    loginViewModel.updateRemember(!loginViewModel.uiState.remember)
                 },
-                isChecked = credentials.remember
+                isChecked = loginViewModel.uiState.remember
             )
             Spacer(modifier = Modifier.height(20.dp))
             Button(
-                onClick = {
-                    if (!checkCredentials(credentials, navController.context)) {
-                        credentials = LoginCredentials()
-                        navController.navigate(AppScreens.NoteScreen.route)
-                    }
-                },
-                enabled = credentials.isNotEmpty(),
+                onClick = { loginViewModel.loginUser(navController) },
+                enabled = loginViewModel.uiState.isNotEmpty(),
                 shape = RoundedCornerShape(5.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -103,29 +84,5 @@ fun LoginScreen(navController: NavController) {
                 route = AppScreens.RegisterScreen.route
             )
         }
-    }
-}
-
-private fun checkCredentials(cred: LoginCredentials, context: Context): Boolean {
-    val emailPattern = Regex("^[^.\\s][\\w\\-.{2,}]+@([\\w-]+\\.)+[\\w-]{2,}\$")
-    val passwordPattern = Regex("^(?=.*[0–9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$")
-    val userPattern = Regex("^[a-zA-Z0-9]+([._]?[a-zA-Z0-9]+)*\$")
-
-    // Test email or username
-    var validId = false
-    if (cred.isNotEmpty()) {
-        validId = if (cred.login.contains('@')) {
-            emailPattern.matches(cred.login)
-        } else {
-            userPattern.matches(cred.login)
-        }
-    }
-
-    return if (!(validId && passwordPattern.matches(cred.password))) {
-        Toast.makeText(context, context.getString(R.string.wrong_credentials), Toast.LENGTH_SHORT)
-            .show()
-        false
-    } else {
-        true
     }
 }

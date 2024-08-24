@@ -7,14 +7,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.pproject.sharednotes.data.db.entity.Note
+import com.pproject.sharednotes.data.db.entity.NoteWithFolders
 import com.pproject.sharednotes.presentation.screens.note.components.EditableTitle
 import com.pproject.sharednotes.presentation.screens.note.components.NoteHeader
 import com.pproject.sharednotes.presentation.screens.note.components.Section
@@ -26,34 +31,23 @@ fun NoteScreen(
     noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory),
 ) {
     val users by noteViewModel.users.observeAsState(emptyList())
-    val note by noteViewModel.note.observeAsState(Note())
+    val note by noteViewModel.note.observeAsState(NoteWithFolders(Note(), emptyList()))
     val folderPairNames by noteViewModel.allPairNameFolders.observeAsState(emptyList())
     Surface {
         Scaffold(
             topBar = {
                 NoteHeader(
                     onClickBack = { navController.popBackStack() },
-                    note = note,
+                    note = note.note,
                     users = users,
-                    onChangeFolder = { noteViewModel.updateFolder(it) },
+                    isPinnedNote = noteViewModel.uiState.pinned,
+                    selectedFolder = noteViewModel.getSelectedFolderId(),
+                    onChangeFolder = { old, new -> noteViewModel.updateFolder(old, new) },
                     folderList = folderPairNames,
-                    onAddCollaborator = { noteViewModel.insertCollaborator(it) },
+                    onAddCollaborator = { noteViewModel.inviteCollaborator(it) },
                     onDeleteCollaborator = { noteViewModel.deleteCollaborator(it) },
                     onChangePinned = { noteViewModel.updatePinned(it) },
-                    onChangeArchive = { isArchived: Boolean ->
-                        if (!isArchived) {
-                            noteViewModel.updateSituation(Note.Situation.ON_USE)
-                        } else {
-                            noteViewModel.updateSituation(Note.Situation.ARCHIVED)
-                        }
-                    },
-                    onChangeDelete = { isDeleted: Boolean ->
-                        if (!isDeleted) {
-                            noteViewModel.updateSituation(Note.Situation.ON_USE)
-                        } else {
-                            noteViewModel.updateSituation(Note.Situation.DELETED)
-                        }
-                    }
+                    onDelete = { noteViewModel.deleteNote(navController) },
                 )
             },
         ) { innerPadding ->
@@ -65,21 +59,25 @@ fun NoteScreen(
                     .padding(innerPadding)
             ) {
                 EditableTitle(
-                    value = note.title,
+                    value = noteViewModel.uiState.title,
                     onChange = { noteViewModel.updateTitle(it) },
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                 )
-                SectionsField(
-                    sections = noteViewModel.content,
-                    onChange = {
-                            section: Section,
-                            newText: String
-                        ->
-                        noteViewModel.updateContent(section, newText)
-                    },
+                TextField(
+                    value = noteViewModel.uiState.content,
+                    onValueChange = { noteViewModel.updateContent(it) },
+                    modifier = Modifier.fillMaxSize(),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent
+                    )
                 )
             }
+        }
+    }
+    LaunchedEffect(note) {
+        if (noteViewModel.uiState.isEmpty()) {
+            noteViewModel.loadNoteData()
         }
     }
 }

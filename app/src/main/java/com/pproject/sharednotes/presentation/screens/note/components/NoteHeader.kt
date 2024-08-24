@@ -1,5 +1,6 @@
 package com.pproject.sharednotes.presentation.screens.note.components
 
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Delete
@@ -17,9 +18,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.pproject.sharednotes.R
 import com.pproject.sharednotes.data.db.entity.Note
 import com.pproject.sharednotes.presentation.common.BackNavigationHeader
+import com.pproject.sharednotes.presentation.common.BasicIconButton
 import com.pproject.sharednotes.presentation.common.BasicIconToggleButton
 import com.pproject.sharednotes.presentation.common.dialog.ConfirmationDialog
 import com.pproject.sharednotes.presentation.common.dialog.NameListManagerDialog
@@ -31,13 +34,14 @@ fun NoteHeader(
     onClickBack: () -> Unit,
     note: Note,
     users: List<String>,
+    isPinnedNote: Boolean,
+    selectedFolder: Int?,
     folderList: List<Pair<Int, String>>,
-    onChangeFolder: (Int?) -> Unit,
+    onChangeFolder: (Int?, Int?) -> Unit,
     onAddCollaborator: (String) -> Unit,
     onDeleteCollaborator: (String) -> Unit,
     onChangePinned: (Boolean) -> Unit,
-    onChangeArchive: (Boolean) -> Unit,
-    onChangeDelete: (Boolean) -> Unit,
+    onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val openFolderDialog = remember { mutableStateOf(false) }
@@ -51,7 +55,7 @@ fun NoteHeader(
         BasicIconToggleButton(
             icon = Icons.Outlined.Folder,
             toggledIcon = Icons.Default.Folder,
-            isToggled = note.folder != null,
+            isToggled = selectedFolder != null,
             onChange = { openFolderDialog.value = true },
         )
         BasicIconToggleButton(
@@ -63,20 +67,12 @@ fun NoteHeader(
         BasicIconToggleButton(
             icon = Icons.Outlined.PushPin,
             toggledIcon = Icons.Default.PushPin,
-            isToggled = note.pinned,
+            isToggled = isPinnedNote,
             onChange = onChangePinned,
         )
-        BasicIconToggleButton(
-            icon = Icons.Outlined.Archive,
-            toggledIcon = Icons.Default.Unarchive,
-            isToggled = note.situation == Note.Situation.ARCHIVED,
-            onChange = onChangeArchive,
-        )
-        BasicIconToggleButton(
-            icon = Icons.Outlined.Delete,
-            toggledIcon = Icons.Default.Delete,
-            isToggled = note.situation == Note.Situation.DELETED,
-            onChange = { openConfirmDeleteDialog.value = true },
+        BasicIconButton(
+            icon = Icons.Default.Delete,
+            onClick = { openConfirmDeleteDialog.value = true },
         )
     }
 
@@ -84,37 +80,30 @@ fun NoteHeader(
         NameListSelectorDialog(
             list = folderList,
             icon = Icons.Default.Folder,
-            headerTitle = "Folder",
+            headerTitle = stringResource(R.string.folder),
             noneSelectionIcon = Icons.Outlined.Folder,
-            selectedId = note.folder,
+            selectedId = selectedFolder,
             onCloseDialog = { openFolderDialog.value = false },
-            onSaveDialog = onChangeFolder,
+            onSaveDialog = { onChangeFolder(selectedFolder, it) },
         )
     }
     if (openConfirmDeleteDialog.value) {
-        if (note.situation == Note.Situation.DELETED) {
-            ConfirmationDialog(
-                message = stringResource(R.string.do_you_want_to_restore_this_note),
-                onClose = { openConfirmDeleteDialog.value = false },
-                onConfirm = { onChangeDelete(false) }
-            )
-        } else {
-            ConfirmationDialog(
-                message = stringResource(R.string.do_you_want_to_delete_this_note),
-                submessage = stringResource(R.string.it_can_only_be_read_and_will_be_deleted_permanently_on_a_month),
-                onClose = { openConfirmDeleteDialog.value = false },
-                onConfirm = { onChangeDelete(true) }
-            )
-        }
+        ConfirmationDialog(
+            message = stringResource(R.string.do_you_want_to_delete_this_note),
+            submessage = stringResource(R.string.it_will_be_permanently_deleted_for_you_but_collaborators_will_be_able_to_continue_editing_it),
+            onClose = { openConfirmDeleteDialog.value = false },
+            onConfirm = { onDelete() }
+        )
     }
     if (openCollaboratorsDialog.value) {
         NameListManagerDialog(
             list = stringToPair(users),
-            headerTitle = "Collaborators",
+            headerTitle = stringResource(R.string.collaborators),
             icon = Icons.Default.Person,
             onAddElement = onAddCollaborator,
             onDeleteElement = onDeleteCollaborator,
-            onCloseDialog = { openCollaboratorsDialog.value = false }
+            onCloseDialog = { openCollaboratorsDialog.value = false },
+            elementModifier = Modifier.height(56.dp)
         )
     }
 }

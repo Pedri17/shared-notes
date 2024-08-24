@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.pproject.sharednotes.data.repository.PreferencesRepository
 import com.pproject.sharednotes.presentation.navigation.AppScreens
 import com.pproject.sharednotes.presentation.screens.home.components.FolderHorizontalGrid
 import com.pproject.sharednotes.presentation.screens.home.components.HomeAddButton
@@ -25,9 +26,20 @@ fun HomeScreen(
     homeViewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
 ) {
     val folders by homeViewModel.foldersWithNotes.observeAsState(emptyList())
+    val notificationPairs by homeViewModel.getNotificationPairs(context = navController.context)
+        .observeAsState(emptyList())
     Surface {
         Scaffold(
-            topBar = { HomeHeader() },
+            topBar = {
+                HomeHeader(
+                    notificationPairs = notificationPairs,
+                    onAcceptNotification = { homeViewModel.interactNotification(it, true) },
+                    onDeleteNotification = { homeViewModel.interactNotification(it, false) },
+                    onLogOut = {
+                        homeViewModel.logOut(navController)
+                    }
+                )
+            },
             floatingActionButton = {
                 HomeAddButton(
                     onCreateFolder = { homeViewModel.createNewFolder(navController) },
@@ -44,10 +56,12 @@ fun HomeScreen(
                         FolderHorizontalGrid(
                             folder = thisFolder.folder,
                             notes = thisFolder.notes,
+                            activeUser = homeViewModel.activeUser,
                             navController = navController,
                             onCreateNote = {
                                 homeViewModel.createNewNoteOnFolder(navController, it)
                             },
+                            onDeleteFolder = { homeViewModel.deleteFolder(it) },
                             modifier = Modifier.padding(10.dp),
                         )
                     }

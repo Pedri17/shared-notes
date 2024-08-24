@@ -14,7 +14,6 @@ data class Note(
     var content: String = "",
     var pinned: Boolean = false,
     var situation: Situation = Situation.ON_USE,
-    @Ignore var folder: Int? = null,
 ) {
     enum class Situation {
         ON_USE,
@@ -28,3 +27,19 @@ data class NoteUserCrossRef(
     val noteId: Int,
     val userName: String,
 )
+
+data class NoteWithFolders(
+    @Embedded val note: Note,
+    @Relation(
+        parentColumn = "noteId",
+        entityColumn = "folderId",
+        associateBy = Junction(FolderNoteCrossRef::class)
+    )
+    val folders: List<Folder>
+) {
+    fun getSelectedFolderId(username: String): Int? {
+        return folders.firstOrNull { folder ->
+            folder.userName == username
+        }?.folderId
+    }
+}

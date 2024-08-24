@@ -9,7 +9,6 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.pproject.sharednotes.data.db.entity.Folder
 import com.pproject.sharednotes.data.db.entity.FolderNoteCrossRef
-import com.pproject.sharednotes.data.db.entity.FolderPinnedNoteCrossRef
 import com.pproject.sharednotes.data.db.entity.FolderWithNotes
 import com.pproject.sharednotes.data.db.entity.Note
 import kotlinx.coroutines.flow.Flow
@@ -22,6 +21,12 @@ interface FolderDao {
     @Query("SELECT * FROM folder")
     fun getAllWithNotes(): Flow<List<FolderWithNotes>>
 
+    @Query("SELECT * FROM folder WHERE userName IN (:username)")
+    fun getAllByUser(username: String): Flow<List<Folder>>
+
+    @Query("SELECT * FROM folder WHERE userName IN (:username)")
+    fun getAllByUserWithNotes(username: String): Flow<List<FolderWithNotes>>
+
     @Query("SELECT * FROM folder WHERE folderId in (:folderId)")
     fun getById(folderId: Int): Flow<Folder>
 
@@ -30,9 +35,6 @@ interface FolderDao {
 
     @Query("SELECT noteId FROM FolderNoteCrossRef WHERE folderId in (:folderId)")
     fun getNoteIdsById(folderId: Int): Flow<List<Int>>
-
-    @Query("SELECT noteId FROM FolderPinnedNoteCrossRef WHERE folderId in (:folderId)")
-    fun getPinnedNoteIdsById(folderId: Int): Flow<List<Int>>
 
     @Transaction
     @Query("SELECT * FROM FolderNoteCrossRef f JOIN note ON f.noteId == note.noteId WHERE folderId IN (:folderId)")
@@ -44,9 +46,6 @@ interface FolderDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertNoteInFolder(folderNoteCrossRef: FolderNoteCrossRef)
 
-    @Insert
-    suspend fun insertPinnedNoteInFolder(folderPinnedNoteCrossRef: FolderPinnedNoteCrossRef)
-
     @Update
     suspend fun update(folder: Folder)
 
@@ -55,7 +54,4 @@ interface FolderDao {
 
     @Delete
     suspend fun deleteNoteInFolder(folderNoteCrossRef: FolderNoteCrossRef)
-
-    @Delete
-    suspend fun deletePinnedNoteInFolder(folderPinnedNoteCrossRef: FolderPinnedNoteCrossRef)
 }

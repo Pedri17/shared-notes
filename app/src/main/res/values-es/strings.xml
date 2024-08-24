@@ -16,4 +16,17 @@
     <string name="yes">Sí</string>
     <string name="no">No</string>
     <string name="none">Ninguna</string>
+    <string name="accept">Aceptar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="do_you_want_to_delete_permanently_this_folder">¿Quieres eliminar permanentemente esta carpeta?</string>
+    <string name="notes_will_not_be_deleted_but_will_remain_without_an_assigned_folder">Las notas no serán eliminadas pero quedarán sin carpeta asignada.</string>
+    <string name="save">Guardar</string>
+    <string name="do_you_want_to_collaborate_with_the_note_from">¿Quieres colaborar con la nota \"%1$s\" de %2$s?</string>
+    <string name="the_user_is_not_registered">El usuario no está registrado.</string>
+    <string name="the_user_is_already_registered">El usuario ya está registrado.</string>
+    <string name="notifications">Notificaciones</string>
+    <string name="do_you_want_to_stop_collaborating_to_the_editing_of_the_note_from">¿Quieres dejar de colaborar en la edición de la nota \"%1$s\" de %2$s?</string>
+    <string name="it_will_be_permanently_deleted_for_you_but_collaborators_will_be_able_to_continue_editing_it">Será permanentemente eliminada para ti pero los colaboradores seguirán pudiendo editarla.</string>
+    <string name="collaborators">Colaboradores</string>
+    <string name="folder">Carpeta</string>
 </resources>

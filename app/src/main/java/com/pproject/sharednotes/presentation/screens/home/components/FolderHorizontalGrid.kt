@@ -12,7 +12,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.FolderDelete
 import androidx.compose.material.icons.filled.PostAdd
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -35,8 +37,10 @@ import com.pproject.sharednotes.presentation.navigation.AppScreens
 fun FolderHorizontalGrid(
     folder: Folder,
     notes: List<Note>,
+    activeUser: String,
     navController: NavController,
     onCreateNote: (Int) -> Unit,
+    onDeleteFolder: (Folder) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -45,7 +49,7 @@ fun FolderHorizontalGrid(
         shape = RoundedCornerShape(10.dp),
         onClick = {
             navController.navigate(
-                "${AppScreens.FolderScreen.route}/${folder.folderId}"
+                "${AppScreens.FolderScreen.route}/${activeUser}/false/${folder.folderId}"
             )
         }
     ) {
@@ -74,6 +78,10 @@ fun FolderHorizontalGrid(
                         icon = Icons.Default.PostAdd,
                         onClick = { onCreateNote(folder.folderId) },
                     )
+                    BasicIconButton(
+                        icon = Icons.Default.Delete,
+                        onClick = { onDeleteFolder(folder) }
+                    )
                 }
             }
             Divider()
@@ -85,6 +93,7 @@ fun FolderHorizontalGrid(
                 ) {
                     NoteCard(
                         note = it,
+                        activeUser = activeUser,
                         navController = navController,
                         modifier = Modifier.padding(2.dp),
                     )

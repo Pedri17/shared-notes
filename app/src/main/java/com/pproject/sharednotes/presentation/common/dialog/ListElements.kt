@@ -38,8 +38,7 @@ fun TitleElement(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start,
-        modifier = modifier
-            .height(56.dp)
+        modifier = modifier,
     ) {
         Icon(
             imageVector = icon,
@@ -100,7 +99,7 @@ fun SelectableTitleElement(
 fun ManageableTitleElement(
     text: String,
     icon: ImageVector,
-    onEdit: (() -> Unit)?,
+    onAccept: (() -> Unit)?,
     onDelete: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
@@ -109,7 +108,6 @@ fun ManageableTitleElement(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp)
     ) {
         TitleElement(
             text = text,
@@ -120,10 +118,10 @@ fun ManageableTitleElement(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (onEdit != null){
+            if (onAccept != null) {
                 BasicIconButton(
-                    icon = Icons.Default.Edit,
-                    onClick = onEdit
+                    icon = Icons.Default.Check,
+                    onClick = onAccept
                 )
             }
             if (onDelete != null) {

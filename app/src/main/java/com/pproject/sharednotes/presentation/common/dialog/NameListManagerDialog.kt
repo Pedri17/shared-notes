@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFloatingActionButton
@@ -52,9 +54,10 @@ fun <T : Any> NameListManagerDialog(
     headerTitle: String,
     icon: ImageVector,
     modifier: Modifier = Modifier,
+    elementModifier: Modifier = Modifier,
     onAddElement: ((String) -> Unit)? = null,
     onDeleteElement: ((T) -> Unit)? = null,
-    onEditElement: ((T) -> Unit)? = null,
+    onAcceptElement: ((T) -> Unit)? = null,
     onCloseDialog: () -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
@@ -82,8 +85,8 @@ fun <T : Any> NameListManagerDialog(
                 ManageableTitleElement(
                     text = element.second,
                     icon = icon,
-                    onEdit = if (onEditElement != null) {
-                        { onEditElement(element.first) }
+                    onAccept = if (onAcceptElement != null) {
+                        { onAcceptElement(element.first) }
                     } else {
                         null
                     },
@@ -92,7 +95,9 @@ fun <T : Any> NameListManagerDialog(
                     } else {
                         null
                     },
+                    modifier = elementModifier
                 )
+                Divider(modifier = Modifier.padding(5.dp))
             }
             if (onAddElement != null && toAddElementState.isActive) {
                 item {
@@ -138,45 +143,3 @@ fun <T : Any> NameListManagerDialog(
         }
     }
 }
-
-    /*
-    Dialog(
-        onDismissRequest = onCloseDialog
-    ) {
-        Card(
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 30.dp
-            ),
-            shape = RoundedCornerShape((1).dp),
-            modifier = modifier.heightIn(max = LocalConfiguration.current.screenHeightDp.dp * 0.7f),
-        ) {
-            Column(
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Top,
-                    modifier = Modifier.weight(0.9f),
-                ) {
-
-                }
-                Row(
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .weight(0.1f)
-                        .fillMaxWidth(),
-                ) {
-                    TextButton(
-                        onClick = onCloseDialog,
-                        modifier = Modifier
-                            .padding(bottom = 10.dp, top = 0.dp, start = 10.dp, end = 10.dp)
-                    ) {
-                        Text(stringResource(R.string.close))
-                    }
-                }
-            }
-        }
-    }
-     */

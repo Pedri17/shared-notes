@@ -12,35 +12,22 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.pproject.sharednotes.R
-import com.pproject.sharednotes.presentation.common.DataTextField
-import com.pproject.sharednotes.presentation.common.PasswordField
-
-data class RegisterCredentials(
-    var user: String = "",
-    var email: String = "",
-    var password: String = "",
-    var repeatPassword: String = ""
-) {
-    fun isNotEmpty(): Boolean {
-        return user.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty() && repeatPassword.isNotEmpty()
-    }
-}
+import com.pproject.sharednotes.presentation.common.authentication.DataTextField
+import com.pproject.sharednotes.presentation.common.authentication.PasswordField
 
 @Composable
-fun RegisterScreen(navController: NavController) {
+fun RegisterScreen(
+    navController: NavController,
+    registerViewModel: RegisterViewModel = viewModel(factory = RegisterViewModel.Factory),
+) {
     Surface {
-        var credentials by remember { mutableStateOf(RegisterCredentials()) }
-
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -50,34 +37,33 @@ fun RegisterScreen(navController: NavController) {
         ){
             Spacer(modifier = Modifier.height(10.dp))
             DataTextField(
-                value = credentials.user,
-                onChange = { data -> credentials = credentials.copy(user = data) },
-                modifier = Modifier.fillMaxWidth()
-            )
-            DataTextField(
-                value = credentials.email,
-                onChange = { data -> credentials = credentials.copy(email = data) },
+                value = registerViewModel.uiState.username,
+                onChange = { registerViewModel.updateUsername(it) },
                 modifier = Modifier.fillMaxWidth()
             )
             PasswordField(
-                value = credentials.password,
-                onChange = { data -> credentials = credentials.copy(password = data) },
+                value = registerViewModel.uiState.password,
+                onChange = { registerViewModel.updatePassword(it) },
                 submit = {},
                 modifier = Modifier.fillMaxWidth()
             )
             PasswordField(
-                value = credentials.password,
-                onChange = { data -> credentials = credentials.copy(repeatPassword = data) },
+                value = registerViewModel.uiState.repeatPassword,
+                onChange = { registerViewModel.updateRepeatPassword(it) },
                 submit = {},
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(20.dp))
             Button(
-                onClick = {},
-                enabled = credentials.isNotEmpty(),
+                onClick = {
+                    if (registerViewModel.checkCredentials(navController.context)) {
+                        registerViewModel.saveUser(navController)
+                    }
+                },
+                enabled = registerViewModel.uiState.isNotEmpty(),
                 shape = RoundedCornerShape(5.dp),
                 modifier = Modifier.fillMaxWidth()
-            ){
+            ) {
                 Text(stringResource(R.string.register))
             }
         }

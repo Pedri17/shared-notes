@@ -26,7 +26,8 @@ fun OnTriggerEditableTitle(
     enabled: Boolean,
     focusRequester: FocusRequester,
     modifier: Modifier = Modifier,
-    onEmptyText: (() -> Unit)? = null
+    isNewFolder: Boolean? = null,
+    onNewFolder: (() -> Unit)? = null,
 ) {
     TextField(
         value = text,
@@ -53,13 +54,13 @@ fun OnTriggerEditableTitle(
             }
         ),
         enabled = enabled,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .focusRequester(focusRequester),
     )
-    LaunchedEffect(enabled, onEmptyText, text) {
-        if (onEmptyText != null && text.text == "") {
-            onEmptyText()
+    LaunchedEffect(isNewFolder, enabled, text) {
+        if (isNewFolder != null && isNewFolder && onNewFolder != null) {
+            onNewFolder()
         }
         if (enabled) {
             focusRequester.requestFocus()

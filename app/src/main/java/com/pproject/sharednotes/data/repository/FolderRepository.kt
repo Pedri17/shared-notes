@@ -4,7 +4,6 @@ import androidx.annotation.WorkerThread
 import com.pproject.sharednotes.data.db.dao.FolderDao
 import com.pproject.sharednotes.data.db.entity.Folder
 import com.pproject.sharednotes.data.db.entity.FolderNoteCrossRef
-import com.pproject.sharednotes.data.db.entity.FolderPinnedNoteCrossRef
 import com.pproject.sharednotes.data.db.entity.FolderWithNotes
 import com.pproject.sharednotes.data.db.entity.Note
 import kotlinx.coroutines.flow.Flow
@@ -18,13 +17,24 @@ class FolderRepository(private val folderDao: FolderDao) {
         return allFolders
     }
 
+    fun getAllByUser(username: String): Flow<List<Folder>> {
+        return folderDao.getAllByUser(username)
+    }
+
+
     fun getAllWithNotes(): Flow<List<FolderWithNotes>> {
         return allWithNotes
     }
 
-    fun getAllPairNames(): Flow<List<Pair<Int, String>>> = allFolders.map { folders ->
-        folders.map {
-            Pair(it.folderId, it.title)
+    fun getAllByUserWithNotes(username: String): Flow<List<FolderWithNotes>> {
+        return folderDao.getAllByUserWithNotes(username)
+    }
+
+    fun getAllPairNamesByUser(username: String): Flow<List<Pair<Int, String>>> {
+        return getAllByUser(username).map { folders ->
+            folders.map {
+                Pair(it.folderId, it.title)
+            }
         }
     }
 
@@ -40,10 +50,6 @@ class FolderRepository(private val folderDao: FolderDao) {
         return folderDao.getNotesById(id)
     }
 
-    fun getPinnedNotesById(id: Int): Flow<List<Int>> {
-        return folderDao.getPinnedNoteIdsById(id)
-    }
-
     @WorkerThread
     suspend fun insert(folder: Folder): Int {
         return folderDao.insert(folder).toInt()
@@ -55,8 +61,8 @@ class FolderRepository(private val folderDao: FolderDao) {
     }
 
     @WorkerThread
-    suspend fun insertPinnedNoteInFolder(noteId: Int, folderId: Int) {
-        folderDao.insertPinnedNoteInFolder(FolderPinnedNoteCrossRef(noteId, folderId))
+    suspend fun insertNoteInFolder(noteId: Int, folderId: Int, pinned: Boolean) {
+        folderDao.insertNoteInFolder(FolderNoteCrossRef(noteId, folderId, pinned))
     }
 
     @WorkerThread
@@ -72,10 +78,5 @@ class FolderRepository(private val folderDao: FolderDao) {
     @WorkerThread
     suspend fun deleteNoteInFolder(noteId: Int, folderId: Int) {
         folderDao.deleteNoteInFolder(FolderNoteCrossRef(noteId, folderId))
-    }
-
-    @WorkerThread
-    suspend fun deletePinnedNoteInFolder(noteId: Int, folderId: Int) {
-        folderDao.deletePinnedNoteInFolder(FolderPinnedNoteCrossRef(noteId, folderId))
     }
 }

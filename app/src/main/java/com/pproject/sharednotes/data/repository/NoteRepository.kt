@@ -3,8 +3,10 @@ package com.pproject.sharednotes.data.repository
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.MutableLiveData
 import com.pproject.sharednotes.data.db.dao.NoteDao
+import com.pproject.sharednotes.data.db.entity.FolderNoteCrossRef
 import com.pproject.sharednotes.data.db.entity.Note
 import com.pproject.sharednotes.data.db.entity.NoteUserCrossRef
+import com.pproject.sharednotes.data.db.entity.NoteWithFolders
 import com.pproject.sharednotes.data.db.entity.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,8 +23,28 @@ class NoteRepository(private val noteDao: NoteDao) {
         return noteDao.getByID(id)
     }
 
+    fun getByIdWithFolders(id: Int): Flow<NoteWithFolders> {
+        return noteDao.getByIdWithFolders(id)
+    }
+
     fun getUserIdsById(id: Int): Flow<List<String>> {
         return noteDao.getUserNamesById(id)
+    }
+
+    fun getPinnedNotes(): Flow<List<FolderNoteCrossRef>> {
+        return noteDao.getPinnedNotes()
+    }
+
+    fun getPinnedNoteFromFolder(folderId: Int, noteId: Int): Flow<FolderNoteCrossRef> {
+        return noteDao.getPinnedNoteFromFolder(folderId, noteId)
+    }
+
+    fun getPinnedNotesFromFolder(folderId: Int): Flow<List<FolderNoteCrossRef>> {
+        return noteDao.getPinnedNotesFromFolder(folderId)
+    }
+
+    fun getIsPinnedNoteInFolder(noteId: Int): Flow<List<FolderNoteCrossRef>> {
+        return noteDao.getIsPinnedNoteInFolder(noteId)
     }
 
     @WorkerThread

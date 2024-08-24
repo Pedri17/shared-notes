@@ -34,13 +34,14 @@ import com.pproject.sharednotes.presentation.navigation.AppScreens
 @Composable
 fun NoteCard(
     note: Note,
+    activeUser: String,
     navController: NavController,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.secondaryContainer,
 ) {
     Surface(
         onClick = {
-            navController.navigate("${AppScreens.NoteScreen.route}/${note.noteId}")
+            navController.navigate("${AppScreens.NoteScreen.route}/${activeUser}/${note.noteId}")
         },
         shape = RoundedCornerShape(15.dp),
     ) {

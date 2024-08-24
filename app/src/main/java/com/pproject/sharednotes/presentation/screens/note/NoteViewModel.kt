@@ -19,72 +19,150 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.navigation.NavController
 import com.pproject.sharednotes.app.SharedNotesApplication
+import com.pproject.sharednotes.data.db.entity.FolderNoteCrossRef
+import com.pproject.sharednotes.data.db.entity.NoteUserCrossRef
+import com.pproject.sharednotes.data.db.entity.NoteWithFolders
+import com.pproject.sharednotes.data.db.entity.Notification
 import com.pproject.sharednotes.data.repository.FolderRepository
 import com.pproject.sharednotes.data.repository.NoteRepository
+import com.pproject.sharednotes.data.repository.NotificationRepository
 import com.pproject.sharednotes.presentation.navigation.AppScreens
 import com.pproject.sharednotes.presentation.screens.folder.FolderViewModel
 import com.pproject.sharednotes.presentation.screens.note.components.Section
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.launch
 
+data class NoteUiState(
+    val title: String = "",
+    val content: String = "",
+    val pinned: Boolean = false,
+    val folder: Int = 0,
+) {
+    fun isEmpty(): Boolean {
+        return title == "" && content == ""
+    }
+}
+
 class NoteViewModel(
-    private val savedStateHandle: SavedStateHandle = SavedStateHandle(),
+    private val savedStateHandle: SavedStateHandle,
     private val noteRepository: NoteRepository,
     private val folderRepository: FolderRepository,
+    private val notificationRepository: NotificationRepository,
 ) : ViewModel() {
+    private val activeUser: String = checkNotNull(savedStateHandle["user"])
     private val openNoteId: Int = checkNotNull(savedStateHandle[AppScreens.NoteScreen.argument])
-    val allPairNameFolders = folderRepository.getAllPairNames().asLiveData()
+    val allPairNameFolders = folderRepository.getAllPairNamesByUser(activeUser).asLiveData()
+    val note: LiveData<NoteWithFolders> = noteRepository.getByIdWithFolders(openNoteId).asLiveData()
+    val users: LiveData<List<String>> = noteRepository.getUserIdsById(openNoteId).asLiveData()
 
-    val note: LiveData<Note> =
-        checkNotNull(noteRepository.getById(openNoteId).asLiveData())
+    var uiState by mutableStateOf(
+        NoteUiState(
+            title = note.value?.note?.title ?: "",
+            content = note.value?.note?.content ?: "",
+        )
+    )
+        private set
 
-    val users: LiveData<List<String>> =
-        checkNotNull(noteRepository.getUserIdsById(openNoteId).asLiveData())
 
-    private var _content =
-        note.value?.let { decomposeInSections(it.content).toMutableStateList() }
-            ?: emptyList<Section>().toMutableStateList()
-    val content: List<Section>
-        get() = _content.toList()
-
-    fun updateTitle(newTitle: String) = viewModelScope.launch {
-        note.value?.let { noteRepository.update(it.copy(title = newTitle)) }
-    }
-
-    private fun updateContent(newContent: String) = viewModelScope.launch {
-        _content = decomposeInSections(newContent).toMutableStateList()
-        note.value?.let { noteRepository.update(it.copy(content = newContent)) }
-    }
-
-    fun updateContent(section: Section, newText: String) = viewModelScope.launch {
-        _content[_content.indexOf(section)] = section.copy(text = newText)
-    }
-
-    fun updatePinned(newPinned: Boolean) = viewModelScope.launch {
-        //TODO: poner en pinned en sus carpetas
-        note.value?.let { noteRepository.update(it.copy(pinned = newPinned)) }
-    }
-
-    fun updateSituation(newSituation: Note.Situation) = viewModelScope.launch {
-        note.value?.let { noteRepository.update(it.copy(situation = newSituation)) }
-    }
-
-    fun updateFolder(newFolderId: Int?) = viewModelScope.launch {
+    fun loadNoteData() {
         note.value?.let {
-            if (newFolderId != null) {
-                folderRepository.insertNoteInFolder(it.noteId, newFolderId)
-            } else {
-                // TODO: delete folder for this user
+            uiState = uiState.copy(
+                title = it.note.title,
+                content = it.note.content,
+            )
+            val selectedFolder = getSelectedFolderId()
+            if (selectedFolder != null) {
+                viewModelScope.launch {
+                    uiState = uiState.copy(
+                        pinned = noteRepository.getPinnedNoteFromFolder(selectedFolder, openNoteId)
+                            .map { fncr ->
+                                fncr.pinned
+                            }.firstOrNull() ?: false
+                    )
+                }
             }
         }
     }
 
-    fun insertCollaborator(collaboratorName: String) = viewModelScope.launch {
-        users.value?.let { noteRepository.insertUserInNote(openNoteId, collaboratorName) }
+    fun getSelectedFolderId(): Int? {
+        note.value?.let {
+            return it.getSelectedFolderId(activeUser)
+        }
+        return null
+    }
+
+    fun updateTitle(newTitle: String) {
+        uiState = uiState.copy(title = newTitle)
+        viewModelScope.launch {
+            note.value?.let { noteRepository.update(it.note.copy(title = newTitle)) }
+        }
+    }
+
+    fun updateContent(newText: String) {
+        uiState = uiState.copy(content = newText)
+        viewModelScope.launch {
+            note.value?.let { noteRepository.update(it.note.copy(content = newText)) }
+        }
+    }
+
+    fun deleteNote(navController: NavController) = viewModelScope.launch {
+        note.value?.let { note ->
+            noteRepository.deleteUserInNote(note.note.noteId, activeUser)
+            users.value?.let {
+                if (it.isEmpty()) {
+                    noteRepository.delete(note.note)
+                }
+            }
+        }
+        navController.popBackStack()
+    }
+
+    fun updatePinned(newPinned: Boolean) = viewModelScope.launch {
+        getSelectedFolderId()?.let {
+            folderRepository.insertNoteInFolder(openNoteId, it, newPinned)
+        }
+        uiState = uiState.copy(pinned = newPinned)
+    }
+
+    fun updateFolder(previousFolderId: Int?, newFolderId: Int?) = viewModelScope.launch {
+        note.value?.let { note ->
+            previousFolderId?.let { folderRepository.deleteNoteInFolder(note.note.noteId, it) }
+            newFolderId?.let { folderRepository.insertNoteInFolder(note.note.noteId, it) }
+        }
+    }
+
+    fun inviteCollaborator(collaboratorName: String) = viewModelScope.launch {
+        note.value?.let {
+            notificationRepository.insert(
+                Notification(
+                    fromUser = activeUser,
+                    toUser = collaboratorName,
+                    type = Notification.Type.PARTICIPATE,
+                    noteId = it.note.noteId
+                )
+            )
+        }
     }
 
     fun deleteCollaborator(collaboratorName: String) = viewModelScope.launch {
-        users.value?.let { noteRepository.deleteUserInNote(openNoteId, collaboratorName) }
+        note.value?.let {
+            notificationRepository.insert(
+                Notification(
+                    fromUser = activeUser,
+                    toUser = collaboratorName,
+                    type = Notification.Type.DISPARTICIPATE,
+                    noteId = it.note.noteId
+                )
+            )
+        }
     }
 
     companion object {
@@ -101,47 +179,9 @@ class NoteViewModel(
                     savedStateHandle,
                     folderRepository = application.container.folderRepository,
                     noteRepository = application.container.noteRepository,
+                    notificationRepository = application.container.notificationRepository,
                 ) as T
             }
         }
     }
-}
-
-fun decomposeInSections(
-    contentText: String,
-    position: Int = 0,
-): List<Section> {
-    val regexSections: Map<Section.Type, Regex> = mapOf(
-        Section.Type.CHECKBOX to Regex("(?<=\\n)\\[[xXvV]].*?(?=\\n|\$)"),
-        Section.Type.ENUMERATION to Regex("(?<=\\n)- .*?(?=\\n|\$)")
-    )
-    if (contentText != "" && contentText != "\n") {
-        for (sectionRegex in regexSections) {
-            val matchResult: MatchResult? = sectionRegex.value.find(contentText)
-            if (matchResult != null) {
-                val previousContent: String = contentText.split(matchResult.value)[0]
-                val nextContent = contentText.removePrefix(previousContent + matchResult.value)
-
-                return decomposeInSections(
-                    previousContent,
-                    position
-                )
-                    .plus(
-                        Section(
-                            position + previousContent.length,
-                            matchResult.value,
-                            sectionRegex.key
-                        )
-                    )
-                    .plus(
-                        decomposeInSections(
-                            nextContent,
-                            position + previousContent.length + matchResult.value.length,
-                        )
-                    )
-            }
-        }
-        return listOf(Section(position, contentText, Section.Type.SIMPLE_TEXT))
-    }
-    return emptyList()
 }
