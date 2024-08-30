@@ -42,7 +42,7 @@ class LoginViewModel(
 ) : ViewModel() {
     init {
         viewModelScope.launch {
-            userRepository.loadUsersFromCloud()
+            userRepository.loadFromCloud()
         }
     }
 

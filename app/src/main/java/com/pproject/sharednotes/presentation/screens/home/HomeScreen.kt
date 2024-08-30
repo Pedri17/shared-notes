@@ -43,7 +43,7 @@ fun HomeScreen(
             },
             floatingActionButton = {
                 HomeAddButton(
-                    onCreateFolder = { homeViewModel.createNewFolder(navController) },
+                    onCreateFolder = { homeViewModel.createNewFolder() },
                 )
             }
         ) { innerPadding ->

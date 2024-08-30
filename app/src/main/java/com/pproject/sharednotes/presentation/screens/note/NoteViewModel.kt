@@ -57,6 +57,14 @@ class NoteViewModel(
     private val folderRepository: FolderRepository,
     private val notificationRepository: NotificationRepository,
 ) : ViewModel() {
+    init {
+        viewModelScope.launch {
+            noteRepository.loadFromCloud()
+            folderRepository.loadFromCloud()
+            notificationRepository.loadFromCloud()
+        }
+    }
+
     private val activeUser: String = checkNotNull(savedStateHandle["user"])
     private val openNoteId: Int = checkNotNull(savedStateHandle[AppScreens.NoteScreen.argument])
     val allPairNameFolders = folderRepository.getAllPairNamesByUser(activeUser).asLiveData()
@@ -121,7 +129,7 @@ class NoteViewModel(
                 }
             }
         }
-        navController.popBackStack()
+        backToLastScreen(navController)
     }
 
     fun updatePinned(newPinned: Boolean) = viewModelScope.launch {
@@ -135,6 +143,7 @@ class NoteViewModel(
         note.value?.let { note ->
             previousFolderId?.let { folderRepository.deleteNoteInFolder(note.note.noteId, it) }
             newFolderId?.let { folderRepository.insertNoteInFolder(note.note.noteId, it) }
+            folderRepository.saveOnCloud()
         }
     }
 
@@ -148,6 +157,7 @@ class NoteViewModel(
                     noteId = it.note.noteId
                 )
             )
+            notificationRepository.saveOnCloud()
         }
     }
 
@@ -162,6 +172,11 @@ class NoteViewModel(
                 )
             )
         }
+    }
+
+    fun backToLastScreen(navController: NavController) = viewModelScope.launch {
+        navController.popBackStack()
+        noteRepository.saveOnCloud()
     }
 
     companion object {

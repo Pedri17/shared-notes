@@ -37,7 +37,7 @@ fun NoteScreen(
         Scaffold(
             topBar = {
                 NoteHeader(
-                    onClickBack = { navController.popBackStack() },
+                    onClickBack = { noteViewModel.backToLastScreen(navController) },
                     note = note.note,
                     users = users,
                     isPinnedNote = noteViewModel.uiState.pinned,

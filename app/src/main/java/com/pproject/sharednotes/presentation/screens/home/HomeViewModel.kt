@@ -41,6 +41,14 @@ class HomeViewModel(
     private val notificationRepository: NotificationRepository,
     private val preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
+    init {
+        viewModelScope.launch {
+            folderRepository.loadFromCloud()
+            noteRepository.loadFromCloud()
+            notificationRepository.loadFromCloud()
+        }
+    }
+
     val activeUser: String = checkNotNull(savedStateHandle["user"])
     private val pinnedNotes = noteRepository.getPinnedNotes()
     private val foldersUser = folderRepository.getAllByUser(activeUser)
@@ -146,14 +154,14 @@ class HomeViewModel(
             }
             // Delete notification
             notificationRepository.delete(notWithNote.notification)
+            // Save notifications
+            notificationRepository.saveOnCloud()
         }
     }
 
-    fun createNewFolder(navController: NavController) = viewModelScope.launch {
-        val newFolderId: Int = folderRepository.insert(Folder(userName = activeUser))
-        navController.navigate(
-            "${AppScreens.FolderScreen.route}/${activeUser}/true/${newFolderId}"
-        )
+    fun createNewFolder() = viewModelScope.launch {
+        folderRepository.insert(Folder(userName = activeUser))
+        folderRepository.saveOnCloud()
     }
 
     fun createNewNote(navController: NavController, folderId: Int? = null) =
@@ -166,10 +174,13 @@ class HomeViewModel(
             navController.navigate(
                 "${AppScreens.NoteScreen.route}/${activeUser}/${newNoteId}"
             )
+            folderRepository.saveOnCloud()
+            noteRepository.saveOnCloud()
         }
 
     fun deleteFolder(folder: Folder) = viewModelScope.launch {
         folderRepository.delete(folder)
+        folderRepository.saveOnCloud()
     }
 
     fun logOut(navController: NavController) = viewModelScope.launch {

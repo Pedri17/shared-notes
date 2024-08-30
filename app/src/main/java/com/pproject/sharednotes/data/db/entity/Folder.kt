@@ -11,14 +11,14 @@ import androidx.room.Relation
 @Entity
 data class Folder(
     @PrimaryKey(autoGenerate = true) var folderId: Int = 0,
-    var userName: String,
+    var userName: String = "",
     var title: String = "New folder",
 )
 
 @Entity(primaryKeys = ["folderId", "noteId"])
 data class FolderNoteCrossRef(
-    var noteId: Int,
-    var folderId: Int,
+    val noteId: Int = 0,
+    val folderId: Int = 0,
 )
 
 data class FolderWithNotes(

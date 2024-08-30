@@ -13,19 +13,12 @@ data class Note(
     var title: String = "New note",
     var content: String = "",
     var pinned: Boolean = false,
-    var situation: Situation = Situation.ON_USE,
-) {
-    enum class Situation {
-        ON_USE,
-        ARCHIVED,
-        DELETED,
-    }
-}
+)
 
 @Entity(primaryKeys = ["noteId", "userName"])
 data class NoteUserCrossRef(
-    val noteId: Int,
-    val userName: String,
+    val noteId: Int = 0,
+    val userName: String = "",
     var pinned: Boolean = false,
 )
 

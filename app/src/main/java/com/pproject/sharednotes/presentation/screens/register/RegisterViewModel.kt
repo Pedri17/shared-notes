@@ -58,7 +58,7 @@ class RegisterViewModel(
         if (userRepository.getUser(uiState.username).firstOrNull() == null) {
             if (uiState.password == uiState.repeatPassword) { // Correct passwords.
                 userRepository.insert(User(uiState.username, uiState.password))
-                userRepository.saveUsersOnCloud()
+                userRepository.saveOnCloud()
                 navController.navigate(AppScreens.LoginScreen.route)
             } else { // Wrong passwords.
                 Toast.makeText(

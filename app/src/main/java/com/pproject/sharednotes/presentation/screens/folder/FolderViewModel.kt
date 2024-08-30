@@ -42,6 +42,13 @@ class FolderViewModel(
     private val folderRepository: FolderRepository,
     private val noteRepository: NoteRepository,
 ) : ViewModel() {
+    init {
+        viewModelScope.launch {
+            folderRepository.loadFromCloud()
+            noteRepository.loadFromCloud()
+        }
+    }
+
     val activeUser: String = checkNotNull(savedStateHandle["user"])
     var isNewFolder: Boolean = checkNotNull(savedStateHandle["newFolder"])
     private val openFolderId: Int = checkNotNull(savedStateHandle[AppScreens.FolderScreen.argument])
@@ -82,6 +89,7 @@ class FolderViewModel(
     private fun saveTitle() = viewModelScope.launch {
         folderWithNotes.value?.let {
             folderRepository.update(it.folder.copy(title = uiState.title.text))
+            folderRepository.saveOnCloud()
         }
     }
 
@@ -115,11 +123,14 @@ class FolderViewModel(
         navController.navigate(
             "${AppScreens.NoteScreen.route}/${activeUser}/${newNoteId}"
         )
+        folderRepository.saveOnCloud()
+        noteRepository.saveOnCloud()
     }
 
     fun deleteFolder() = viewModelScope.launch {
         folderWithNotes.value?.let {
             folderRepository.delete(it.folder)
+            folderRepository.saveOnCloud()
         }
     }
 

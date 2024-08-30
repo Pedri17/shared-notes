@@ -10,10 +10,10 @@ import com.pproject.sharednotes.R
 @Entity
 data class Notification(
     @PrimaryKey(autoGenerate = true) val notificationId: Int = 0,
-    val fromUser: String,
-    val toUser: String,
-    val noteId: Int,
-    var type: Type,
+    val fromUser: String = "",
+    val toUser: String = "",
+    val noteId: Int = 0,
+    var type: Type = Type.PARTICIPATE,
 ) {
     enum class Type {
         PARTICIPATE,

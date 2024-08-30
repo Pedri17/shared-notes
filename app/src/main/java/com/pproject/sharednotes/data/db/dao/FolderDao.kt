@@ -18,6 +18,9 @@ interface FolderDao {
     @Query("SELECT * FROM folder")
     fun getAll(): Flow<List<Folder>>
 
+    @Query("SELECT * FROM foldernotecrossref")
+    fun getAllFolderNoteCrossRef(): Flow<List<FolderNoteCrossRef>>
+
     @Query("SELECT * FROM folder")
     fun getAllWithNotes(): Flow<List<FolderWithNotes>>
 
@@ -40,11 +43,17 @@ interface FolderDao {
     @Query("SELECT * FROM FolderNoteCrossRef f JOIN note ON f.noteId == note.noteId WHERE folderId IN (:folderId)")
     fun getNotesById(folderId: Int): Flow<List<Note>>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(folder: Folder): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(folders: List<Folder>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertNoteInFolder(folderNoteCrossRef: FolderNoteCrossRef)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertNoteInFolder(folderNoteCrossRefs: List<FolderNoteCrossRef>)
 
     @Update
     suspend fun update(folder: Folder)
@@ -54,4 +63,10 @@ interface FolderDao {
 
     @Delete
     suspend fun deleteNoteInFolder(folderNoteCrossRef: FolderNoteCrossRef)
+
+    @Query("DELETE FROM folder")
+    suspend fun deleteAllFolders()
+
+    @Query("DELETE FROM foldernotecrossref")
+    suspend fun deleteAllFolderNoteCrossRef()
 }

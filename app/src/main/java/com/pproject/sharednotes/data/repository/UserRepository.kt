@@ -30,28 +30,20 @@ class UserRepository(private val userDao: UserDao) {
         return allUsers
     }
 
-    suspend fun saveUsersOnCloud() {
+    suspend fun saveOnCloud() {
         val users = getAll().firstOrNull()
         val output = ByteArrayOutputStream()
         if (users != null) {
-            val mapper = ObjectMapper()
-            mapper.writeValue(output, users)
+            ObjectMapper().writeValue(output, users)
             upload("users.json", output.toByteArray())
         }
-        loadUsersFromCloud()
     }
 
-    suspend fun loadUsersFromCloud() {
+    suspend fun loadFromCloud() {
         val cloudData = download("/users.json")
         if (cloudData.isNotEmpty()) {
-            deleteAll()
-
-            val mapper = ObjectMapper()
-            val users: List<User> = mapper.readValue(cloudData)
-            users.forEach {
-                userDao.insert(it)
-            }
-            Log.d("Load Users", "Success")
+            val users: List<User> = ObjectMapper().readValue(cloudData)
+            userDao.insert(users)
         }
     }
 
