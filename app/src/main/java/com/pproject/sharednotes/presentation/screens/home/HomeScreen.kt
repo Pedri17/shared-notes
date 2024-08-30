@@ -26,6 +26,7 @@ fun HomeScreen(
     homeViewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
 ) {
     val folders by homeViewModel.foldersWithNotes.observeAsState(emptyList())
+    val notesWithoutFolder by homeViewModel.notesWithoutFolder.observeAsState(emptyList())
     val notificationPairs by homeViewModel.getNotificationPairs(context = navController.context)
         .observeAsState(emptyList())
     Surface {
@@ -59,10 +60,21 @@ fun HomeScreen(
                             activeUser = homeViewModel.activeUser,
                             navController = navController,
                             onCreateNote = {
-                                homeViewModel.createNewNoteOnFolder(navController, it)
+                                homeViewModel.createNewNote(navController, it)
                             },
                             onDeleteFolder = { homeViewModel.deleteFolder(it) },
                             modifier = Modifier.padding(10.dp),
+                        )
+                    }
+                    item {
+                        FolderHorizontalGrid(
+                            folder = null,
+                            notes = notesWithoutFolder,
+                            activeUser = homeViewModel.activeUser,
+                            navController = navController,
+                            onCreateNote = {
+                                homeViewModel.createNewNote(navController, it)
+                            },
                         )
                     }
                 }

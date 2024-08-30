@@ -19,7 +19,6 @@ data class Folder(
 data class FolderNoteCrossRef(
     var noteId: Int,
     var folderId: Int,
-    var pinned: Boolean = false,
 )
 
 data class FolderWithNotes(

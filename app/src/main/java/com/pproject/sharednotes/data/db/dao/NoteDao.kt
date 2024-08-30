@@ -3,6 +3,7 @@ package com.pproject.sharednotes.data.db.dao
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
@@ -28,22 +29,16 @@ interface NoteDao {
     @Query("SELECT userName FROM noteusercrossref WHERE noteId IN (:noteId)")
     fun getUserNamesById(noteId: Int): Flow<List<String>>
 
+    @Query("SELECT * FROM noteusercrossref")
+    fun getPinnedNotes(): Flow<List<NoteUserCrossRef>>
+
     @Query("SELECT * FROM foldernotecrossref")
-    fun getPinnedNotes(): Flow<List<FolderNoteCrossRef>>
-
-    @Query("SELECT * FROM foldernotecrossref WHERE folderId IN (:folderId) AND noteId IN (:noteId)")
-    fun getPinnedNoteFromFolder(folderId: Int, noteId: Int): Flow<FolderNoteCrossRef>
-
-    @Query("SELECT * FROM foldernotecrossref WHERE folderId IN (:folderId)")
-    fun getPinnedNotesFromFolder(folderId: Int): Flow<List<FolderNoteCrossRef>>
-
-    @Query("SELECT * FROM foldernotecrossref WHERE noteId IN (:noteId)")
-    fun getIsPinnedNoteInFolder(noteId: Int): Flow<List<FolderNoteCrossRef>>
+    fun getFolderNoteCrossRef(): Flow<List<FolderNoteCrossRef>>
 
     @Insert
     suspend fun insert(note: Note): Long
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUserInNote(noteUserCrossRef: NoteUserCrossRef)
 
     @Update

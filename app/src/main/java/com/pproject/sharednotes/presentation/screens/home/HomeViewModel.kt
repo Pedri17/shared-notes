@@ -18,6 +18,7 @@ import com.pproject.sharednotes.data.db.entity.Folder
 import com.pproject.sharednotes.data.db.entity.FolderNoteCrossRef
 import com.pproject.sharednotes.data.db.entity.FolderWithNotes
 import com.pproject.sharednotes.data.db.entity.Note
+import com.pproject.sharednotes.data.db.entity.NoteUserCrossRef
 import com.pproject.sharednotes.data.db.entity.Notification
 import com.pproject.sharednotes.data.db.entity.NotificationWithNote
 import com.pproject.sharednotes.data.repository.FolderRepository
@@ -41,7 +42,48 @@ class HomeViewModel(
     private val preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
     val activeUser: String = checkNotNull(savedStateHandle["user"])
-    private var pinnedNotes = noteRepository.getPinnedNotes()
+    private val pinnedNotes = noteRepository.getPinnedNotes()
+    private val foldersUser = folderRepository.getAllByUser(activeUser)
+    private var folderNoteCrossRefFromUserFolders =
+        noteRepository.getFolderNoteCrossRef().combine(foldersUser) { fncr, foldersUser ->
+            fncr.filter {
+                var found = false
+                foldersUser.forEach { folder ->
+                    if (it.folderId == folder.folderId) found = true
+                }
+                found
+            }
+        }
+
+    var notesWithoutFolder =
+        noteRepository.getAll().combine(folderNoteCrossRefFromUserFolders) { notes, cross ->
+            notes.filter { note ->
+                var found = true
+                cross.forEach {
+                    if (it.noteId == note.noteId) found = false
+                }
+                found
+            }
+        }.combine(pinnedNotes) { notes, pinnedNotes ->
+            notes.filter { note ->
+                pinnedNotes.contains(
+                    NoteUserCrossRef(note.noteId, activeUser, true)
+                )
+            }.plus(
+                notes.filter { note ->
+                    pinnedNotes.contains(
+                        NoteUserCrossRef(note.noteId, activeUser, false)
+                    )
+                }
+            ).map { note ->
+                note.copy(
+                    pinned = pinnedNotes.contains(
+                        NoteUserCrossRef(note.noteId, activeUser, true)
+                    )
+                )
+            }
+        }.asLiveData()
+
     var foldersWithNotes: LiveData<List<FolderWithNotes>> =
         folderRepository.getAllByUserWithNotes(activeUser)
             .combine(pinnedNotes) { list, pinnedNotes ->
@@ -49,28 +91,25 @@ class HomeViewModel(
                     fwn.copy(
                         notes = fwn.notes.filter { note ->
                             pinnedNotes.contains(
-                                FolderNoteCrossRef(note.noteId,fwn.folder.folderId,true)
+                                NoteUserCrossRef(note.noteId, activeUser, true)
                             )
                         }.plus(
                             fwn.notes.filter { note ->
                                 pinnedNotes.contains(
-                                    FolderNoteCrossRef(note.noteId,fwn.folder.folderId,false)
+                                    NoteUserCrossRef(note.noteId, activeUser, false)
                                 )
                             }
                         ).map { note ->
                             note.copy(
                                 pinned = pinnedNotes.contains(
-                                    FolderNoteCrossRef(
-                                        note.noteId,
-                                        fwn.folder.folderId,
-                                        true
-                                    )
+                                    NoteUserCrossRef(note.noteId, activeUser, true)
                                 )
                             )
                         }
                     )
                 }
             }.asLiveData()
+
     private var notifications: Flow<List<NotificationWithNote>> = notificationRepository.getAllWithNoteToUser(activeUser)
 
     fun getNotificationPairs(context: Context): LiveData<List<Pair<Int, String>>> {
@@ -117,14 +156,17 @@ class HomeViewModel(
         )
     }
 
-    fun createNewNoteOnFolder(navController: NavController, folderId: Int) = viewModelScope.launch {
-        val newNoteId: Int = noteRepository.insert(Note())
-        noteRepository.insertUserInNote(newNoteId, userName = activeUser)
-        folderRepository.insertNoteInFolder(noteId = newNoteId, folderId = folderId)
-        navController.navigate(
-            "${AppScreens.NoteScreen.route}/${activeUser}/${newNoteId}"
-        )
-    }
+    fun createNewNote(navController: NavController, folderId: Int? = null) =
+        viewModelScope.launch {
+            val newNoteId: Int = noteRepository.insert(Note())
+            noteRepository.insertUserInNote(newNoteId, userName = activeUser)
+            if (folderId != null) {
+                folderRepository.insertNoteInFolder(noteId = newNoteId, folderId = folderId)
+            }
+            navController.navigate(
+                "${AppScreens.NoteScreen.route}/${activeUser}/${newNoteId}"
+            )
+        }
 
     fun deleteFolder(folder: Folder) = viewModelScope.launch {
         folderRepository.delete(folder)

@@ -29,4 +29,5 @@
     <string name="it_will_be_permanently_deleted_for_you_but_collaborators_will_be_able_to_continue_editing_it">Será permanentemente eliminada para ti pero los colaboradores seguirán pudiendo editarla.</string>
     <string name="collaborators">Colaboradores</string>
     <string name="folder">Carpeta</string>
+    <string name="without_folder">Sin Carpeta</string>
 </resources>

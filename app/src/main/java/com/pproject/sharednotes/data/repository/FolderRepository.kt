@@ -61,11 +61,6 @@ class FolderRepository(private val folderDao: FolderDao) {
     }
 
     @WorkerThread
-    suspend fun insertNoteInFolder(noteId: Int, folderId: Int, pinned: Boolean) {
-        folderDao.insertNoteInFolder(FolderNoteCrossRef(noteId, folderId, pinned))
-    }
-
-    @WorkerThread
     suspend fun update(folder: Folder) {
         folderDao.update(folder)
     }

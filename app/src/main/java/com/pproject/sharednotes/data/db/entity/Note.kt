@@ -26,6 +26,7 @@ data class Note(
 data class NoteUserCrossRef(
     val noteId: Int,
     val userName: String,
+    var pinned: Boolean = false,
 )
 
 data class NoteWithFolders(

@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.FolderDelete
 import androidx.compose.material.icons.filled.PostAdd
+import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -24,9 +25,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.pproject.sharednotes.R
 import com.pproject.sharednotes.data.db.entity.Folder
 import com.pproject.sharednotes.data.db.entity.Note
 import com.pproject.sharednotes.presentation.common.BasicIconButton
@@ -35,23 +38,34 @@ import com.pproject.sharednotes.presentation.navigation.AppScreens
 
 @Composable
 fun FolderHorizontalGrid(
-    folder: Folder,
+    folder: Folder?,
     notes: List<Note>,
     activeUser: String,
     navController: NavController,
-    onCreateNote: (Int) -> Unit,
-    onDeleteFolder: (Folder) -> Unit,
+    onCreateNote: (Int?) -> Unit,
     modifier: Modifier = Modifier,
+    onDeleteFolder: ((Folder) -> Unit)? = null,
 ) {
-    Surface(
-        color = Color.Transparent,
-        modifier = modifier,
-        shape = RoundedCornerShape(10.dp),
+    var onClick = {}
+    var title = stringResource(R.string.without_folder)
+    var icon = Icons.Outlined.Folder
+    var onCreateNoteFolder: Int? = null
+
+    if (folder != null) {
         onClick = {
             navController.navigate(
                 "${AppScreens.FolderScreen.route}/${activeUser}/false/${folder.folderId}"
             )
         }
+        title = folder.title
+        icon = Icons.Default.Folder
+        onCreateNoteFolder = folder.folderId
+    }
+    Surface(
+        color = Color.Transparent,
+        modifier = modifier,
+        shape = RoundedCornerShape(10.dp),
+        onClick = onClick
     ) {
         Column {
             Row(
@@ -62,12 +76,12 @@ fun FolderHorizontalGrid(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Folder,
+                        imageVector = icon,
                         contentDescription = null,
                     )
                     Spacer(modifier = Modifier.padding(horizontal = 6.dp))
                     Text(
-                        text = folder.title,
+                        text = title,
                         fontSize = 20.sp,
                     )
                 }
@@ -76,12 +90,14 @@ fun FolderHorizontalGrid(
                 ) {
                     BasicIconButton(
                         icon = Icons.Default.PostAdd,
-                        onClick = { onCreateNote(folder.folderId) },
+                        onClick = { onCreateNote(onCreateNoteFolder) },
                     )
-                    BasicIconButton(
-                        icon = Icons.Default.Delete,
-                        onClick = { onDeleteFolder(folder) }
-                    )
+                    if (folder != null && onDeleteFolder != null) {
+                        BasicIconButton(
+                            icon = Icons.Default.Delete,
+                            onClick = { onDeleteFolder(folder) }
+                        )
+                    }
                 }
             }
             Divider()

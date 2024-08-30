@@ -18,6 +18,7 @@ import com.pproject.sharednotes.app.SharedNotesApplication
 import com.pproject.sharednotes.data.db.entity.User
 import com.pproject.sharednotes.data.repository.UserRepository
 import com.pproject.sharednotes.presentation.navigation.AppScreens
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 data class RegisterUiState(
@@ -26,7 +27,7 @@ data class RegisterUiState(
     var repeatPassword: String = "",
 ) {
     fun isNotEmpty(): Boolean {
-        return username.isNotEmpty() && password.isNotEmpty()
+        return username.isNotEmpty() && password.isNotEmpty() && repeatPassword.isNotEmpty()
     }
 }
 
@@ -49,15 +50,25 @@ class RegisterViewModel(
         uiState = uiState.copy(repeatPassword = newPassword)
     }
 
-    fun emptyCredentials() {
+    private fun emptyCredentials() {
         uiState = uiState.copy(username = "", password = "", repeatPassword = "")
     }
 
     fun saveUser(navController: NavController) = viewModelScope.launch {
-        if (userRepository.getUser(uiState.username).asLiveData().value == null) {
-            userRepository.insert(User(uiState.username, uiState.password))
-            navController.navigate(AppScreens.LoginScreen.route)
-        } else {
+        if (userRepository.getUser(uiState.username).firstOrNull() == null) {
+            if (uiState.password == uiState.repeatPassword) { // Correct passwords.
+                userRepository.insert(User(uiState.username, uiState.password))
+                userRepository.saveUsersOnCloud()
+                navController.navigate(AppScreens.LoginScreen.route)
+            } else { // Wrong passwords.
+                Toast.makeText(
+                    navController.context,
+                    "Passwords do not match",
+                    Toast.LENGTH_SHORT
+                )
+                    .show()
+            }
+        } else { // User already registered.
             emptyCredentials()
             Toast.makeText(
                 navController.context,
@@ -65,25 +76,6 @@ class RegisterViewModel(
                 Toast.LENGTH_SHORT
             )
                 .show()
-        }
-    }
-
-    fun checkCredentials(context: Context): Boolean {
-        //val passwordPattern = Regex("^(?=.*[0–9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$")
-        //val userPattern = Regex("^[a-zA-Z0-9]+([._]?[a-zA-Z0-9]+)*\$")
-        val passwordPattern = Regex("^[a-zA-Z0-9]+$")
-        val userPattern = Regex("^[a-zA-Z0-9]+$")
-
-        return if (false) {
-            Toast.makeText(
-                context,
-                context.getString(R.string.wrong_credentials),
-                Toast.LENGTH_SHORT
-            )
-                .show()
-            false
-        } else {
-            true
         }
     }
 

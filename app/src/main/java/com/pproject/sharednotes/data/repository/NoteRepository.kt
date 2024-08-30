@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
 
 class NoteRepository(private val noteDao: NoteDao) {
     private val allNotes = noteDao.getAll()
+    private val pinnedNotes = noteDao.getPinnedNotes()
 
     fun getAll(): Flow<List<Note>> {
         return allNotes
@@ -31,20 +32,12 @@ class NoteRepository(private val noteDao: NoteDao) {
         return noteDao.getUserNamesById(id)
     }
 
-    fun getPinnedNotes(): Flow<List<FolderNoteCrossRef>> {
-        return noteDao.getPinnedNotes()
+    fun getPinnedNotes(): Flow<List<NoteUserCrossRef>> {
+        return pinnedNotes
     }
 
-    fun getPinnedNoteFromFolder(folderId: Int, noteId: Int): Flow<FolderNoteCrossRef> {
-        return noteDao.getPinnedNoteFromFolder(folderId, noteId)
-    }
-
-    fun getPinnedNotesFromFolder(folderId: Int): Flow<List<FolderNoteCrossRef>> {
-        return noteDao.getPinnedNotesFromFolder(folderId)
-    }
-
-    fun getIsPinnedNoteInFolder(noteId: Int): Flow<List<FolderNoteCrossRef>> {
-        return noteDao.getIsPinnedNoteInFolder(noteId)
+    fun getFolderNoteCrossRef(): Flow<List<FolderNoteCrossRef>> {
+        return noteDao.getFolderNoteCrossRef()
     }
 
     @WorkerThread
@@ -55,6 +48,11 @@ class NoteRepository(private val noteDao: NoteDao) {
     @WorkerThread
     suspend fun insertUserInNote(noteId: Int, userName: String) {
         noteDao.insertUserInNote(NoteUserCrossRef(noteId, userName))
+    }
+
+    @WorkerThread
+    suspend fun insertUserInNote(noteId: Int, userName: String, pinned: Boolean) {
+        noteDao.insertUserInNote(NoteUserCrossRef(noteId, userName, pinned))
     }
 
     @WorkerThread

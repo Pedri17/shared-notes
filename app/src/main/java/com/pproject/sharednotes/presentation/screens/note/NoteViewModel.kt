@@ -82,10 +82,9 @@ class NoteViewModel(
             if (selectedFolder != null) {
                 viewModelScope.launch {
                     uiState = uiState.copy(
-                        pinned = noteRepository.getPinnedNoteFromFolder(selectedFolder, openNoteId)
-                            .map { fncr ->
-                                fncr.pinned
-                            }.firstOrNull() ?: false
+                        pinned = noteRepository.getPinnedNotes().map { pinneds ->
+                            pinneds.contains(NoteUserCrossRef(openNoteId, activeUser, true))
+                        }.firstOrNull() ?: false
                     )
                 }
             }
@@ -127,7 +126,7 @@ class NoteViewModel(
 
     fun updatePinned(newPinned: Boolean) = viewModelScope.launch {
         getSelectedFolderId()?.let {
-            folderRepository.insertNoteInFolder(openNoteId, it, newPinned)
+            noteRepository.insertUserInNote(openNoteId, activeUser, newPinned)
         }
         uiState = uiState.copy(pinned = newPinned)
     }

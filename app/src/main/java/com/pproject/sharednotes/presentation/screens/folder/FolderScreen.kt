@@ -38,7 +38,6 @@ fun FolderScreen(
             emptyList()
         )
     )
-    val orderedNotes by folderViewModel.orderedNotes.observeAsState(emptyList())
     Surface {
         Column(
             verticalArrangement = Arrangement.Top,
@@ -73,7 +72,7 @@ fun FolderScreen(
                 columns = GridCells.Fixed(2)
             ) {
                 items(
-                    items = orderedNotes,
+                    items = folder.notes,
                 ) { note ->
                     NoteCard(
                         note = note,

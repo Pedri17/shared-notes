@@ -19,8 +19,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.pproject.sharednotes.R
+import com.pproject.sharednotes.presentation.common.authentication.ClickableRouteText
 import com.pproject.sharednotes.presentation.common.authentication.DataTextField
 import com.pproject.sharednotes.presentation.common.authentication.PasswordField
+import com.pproject.sharednotes.presentation.navigation.AppScreens
 
 @Composable
 fun RegisterScreen(
@@ -55,17 +57,18 @@ fun RegisterScreen(
             )
             Spacer(modifier = Modifier.height(20.dp))
             Button(
-                onClick = {
-                    if (registerViewModel.checkCredentials(navController.context)) {
-                        registerViewModel.saveUser(navController)
-                    }
-                },
+                onClick = { registerViewModel.saveUser(navController) },
                 enabled = registerViewModel.uiState.isNotEmpty(),
                 shape = RoundedCornerShape(5.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.register))
             }
+            ClickableRouteText(
+                navController = navController,
+                text = stringResource(R.string.or_sign_in),
+                route = AppScreens.LoginScreen.route
+            )
         }
     }
 }

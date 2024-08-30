@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name" translatable="false">SharedNotes</string>
+    <string name="app_key" translatable="false">mirmb4ov4t44rlu</string>
     <string name="forgot_password">Forgot password?</string>
     <string name="remember_me">Remember Me</string>
     <string name="login">Login</string>
@@ -29,4 +30,7 @@
     <string name="it_will_be_permanently_deleted_for_you_but_collaborators_will_be_able_to_continue_editing_it">It will be permanently deleted for you but collaborators will be able to continue editing it.</string>
     <string name="collaborators">Collaborators</string>
     <string name="folder">Folder</string>
+    <string name="without_folder">Without Folder</string>
+    <string name="wrong_password">Wrong password</string>
+    <string name="or_sign_in">Or sign in</string>
 </resources>
