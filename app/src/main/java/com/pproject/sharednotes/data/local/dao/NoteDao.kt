@@ -21,6 +21,7 @@ interface NoteDao {
     @Query("SELECT * FROM noteusercrossref")
     fun getAllNoteUserCrossRef(): Flow<List<NoteUserCrossRef>>
 
+    @Transaction
     @Query("SELECT * FROM note WHERE noteId in (:noteId)")
     fun getByIdWithFolders(noteId: Int): Flow<NoteWithFolders>
 

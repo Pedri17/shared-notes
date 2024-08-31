@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.pproject.sharednotes.data.local.entity.Folder
 import com.pproject.sharednotes.data.local.entity.FolderNoteCrossRef
@@ -22,9 +23,11 @@ interface FolderDao {
     @Query("SELECT * FROM folder WHERE userName IN (:username)")
     fun getAllByUser(username: String): Flow<List<Folder>>
 
+    @Transaction
     @Query("SELECT * FROM folder WHERE userName IN (:username)")
     fun getAllByUserWithNotes(username: String): Flow<List<FolderWithNotes>>
 
+    @Transaction
     @Query("SELECT * FROM folder WHERE folderId in (:folderId)")
     fun getWithNotesById(folderId: Int): Flow<FolderWithNotes>
 

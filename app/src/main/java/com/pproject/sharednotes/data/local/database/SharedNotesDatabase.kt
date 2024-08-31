@@ -28,7 +28,7 @@ import com.pproject.sharednotes.data.local.entity.User
         NoteUserCrossRef::class,
         FolderNoteCrossRef::class,
     ],
-    version = 21
+    version = 22
 )
 abstract class SharedNotesDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao

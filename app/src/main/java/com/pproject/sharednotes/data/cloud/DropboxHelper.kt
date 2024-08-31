@@ -1,5 +1,6 @@
 package com.pproject.sharednotes.data.cloud
 
+import android.util.Log
 import com.dropbox.core.DbxRequestConfig
 import com.dropbox.core.oauth.DbxCredential
 import com.dropbox.core.v2.DbxClientV2
@@ -27,16 +28,24 @@ class DropboxHelper : CloudHelper {
     override suspend fun upload(fileName: String, data: ByteArray): Any =
         withContext(Dispatchers.IO) {
             val inputStream: InputStream = ByteArrayInputStream(data)
-            client.files()
-                .uploadBuilder("/${fileName}") //Path in the user's Dropbox to save the file.
-                .withMode(WriteMode.OVERWRITE) //always overwrite existing file
-                .uploadAndFinish(inputStream)
+            try {
+                client.files()
+                    .uploadBuilder("/${fileName}")
+                    .withMode(WriteMode.OVERWRITE)
+                    .uploadAndFinish(inputStream)
+            } catch (e: Exception) {
+                Log.e("CloudUploadException", "${e.message}")
+            }
         }
 
     override suspend fun download(fileName: String) = withContext(Dispatchers.IO) {
         val outputStream: OutputStream = ByteArrayOutputStream()
-        client.files().download("/${fileName}")
-            .download(outputStream)
+        try {
+            client.files().download("/${fileName}")
+                .download(outputStream)
+        } catch (e: Exception) {
+            Log.e("CloudDownloadException", "${e.message}")
+        }
         outputStream.toString()
     }
 }

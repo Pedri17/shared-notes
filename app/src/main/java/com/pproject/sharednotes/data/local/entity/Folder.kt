@@ -2,6 +2,7 @@ package com.pproject.sharednotes.data.local.entity
 
 import androidx.room.Embedded
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.Junction
 import androidx.room.PrimaryKey
 import androidx.room.Relation
@@ -13,7 +14,10 @@ data class Folder(
     var title: String = "New folder",
 )
 
-@Entity(primaryKeys = ["folderId", "noteId"])
+@Entity(
+    primaryKeys = ["folderId", "noteId"],
+    indices = [Index(value = ["noteId"])],
+)
 data class FolderNoteCrossRef(
     val noteId: Int = 0,
     val folderId: Int = 0,
