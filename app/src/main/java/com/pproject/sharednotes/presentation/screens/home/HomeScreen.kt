@@ -11,11 +11,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.pproject.sharednotes.data.repository.PreferencesRepository
-import com.pproject.sharednotes.presentation.navigation.AppScreens
 import com.pproject.sharednotes.presentation.screens.home.components.FolderHorizontalGrid
 import com.pproject.sharednotes.presentation.screens.home.components.HomeAddButton
 import com.pproject.sharednotes.presentation.screens.home.components.HomeHeader
@@ -27,7 +24,7 @@ fun HomeScreen(
 ) {
     val folders by homeViewModel.foldersWithNotes.observeAsState(emptyList())
     val notesWithoutFolder by homeViewModel.notesWithoutFolder.observeAsState(emptyList())
-    val notificationPairs by homeViewModel.getNotificationPairs(context = navController.context)
+    val notificationPairs by homeViewModel.getNotificationPairs(navController.context)
         .observeAsState(emptyList())
     Surface {
         Scaffold(
@@ -43,7 +40,7 @@ fun HomeScreen(
             },
             floatingActionButton = {
                 HomeAddButton(
-                    onCreateFolder = { homeViewModel.createNewFolder() },
+                    onCreateFolder = { homeViewModel.createNewFolder(navController) },
                 )
             }
         ) { innerPadding ->

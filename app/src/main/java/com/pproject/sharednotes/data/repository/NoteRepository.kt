@@ -1,67 +1,107 @@
 package com.pproject.sharednotes.data.repository
 
-import android.util.Log
 import androidx.annotation.WorkerThread
-import androidx.lifecycle.MutableLiveData
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.pproject.sharednotes.data.db.dao.NoteDao
-import com.pproject.sharednotes.data.db.entity.FolderNoteCrossRef
-import com.pproject.sharednotes.data.db.entity.Note
-import com.pproject.sharednotes.data.db.entity.NoteUserCrossRef
-import com.pproject.sharednotes.data.db.entity.NoteWithFolders
-import com.pproject.sharednotes.data.db.entity.User
-import com.pproject.sharednotes.data.network.download
-import com.pproject.sharednotes.data.network.upload
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import com.pproject.sharednotes.data.local.dao.NoteDao
+import com.pproject.sharednotes.data.local.entity.Folder
+import com.pproject.sharednotes.data.local.entity.FolderWithNotes
+import com.pproject.sharednotes.data.local.entity.Note
+import com.pproject.sharednotes.data.local.entity.NoteUserCrossRef
+import com.pproject.sharednotes.data.local.entity.NoteWithFolders
+import com.pproject.sharednotes.data.cloud.CloudManager
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
-import java.io.ByteArrayOutputStream
+import kotlinx.coroutines.flow.combine
 
 class NoteRepository(private val noteDao: NoteDao) {
     private val allNotes = noteDao.getAll()
     private val pinnedNotes = noteDao.getPinnedNotes()
+    private val folderNoteCrossRef = noteDao.getFolderNoteCrossRef()
 
+    // Getters.
     fun getAll(): Flow<List<Note>> {
         return allNotes
     }
 
-    suspend fun saveOnCloud() {
-        val notes = getAll().firstOrNull()
-        val noteUserCrossRefs = noteDao.getAllNoteUserCrossRef().firstOrNull()
-        val output = ByteArrayOutputStream()
-        if (notes != null) {
-            ObjectMapper().writeValue(output, notes)
-            upload("notes.json", output.toByteArray())
-            output.reset()
+    fun getOrderedOutOfFolders(
+        folders: Flow<List<Folder>>,
+        username: String
+    ): Flow<List<Note>> {
+        val folderNoteCrossRefFromFolders =
+            folderNoteCrossRef.combine(folders) { fncr, foldersUser ->
+                fncr.filter {
+                    foldersUser.any { folder ->
+                        it.folderId == folder.folderId
+                    }
+                }
+            }
+        val notesOutOfFolder = getAll().combine(folderNoteCrossRefFromFolders) { notes, cross ->
+            notes.filter { note ->
+                !cross.any {
+                    it.noteId == note.noteId
+                }
+            }
         }
-        if (noteUserCrossRefs != null) {
-            ObjectMapper().writeValue(output, noteUserCrossRefs)
-            upload("noteUserCrossRefs.json", output.toByteArray())
+        return orderNotesFlow(notesOutOfFolder, username)
+    }
+
+    private fun orderNotesFlow(
+        noteList: Flow<List<Note>>,
+        username: String
+    ): Flow<List<Note>> {
+        return noteList.combine(pinnedNotes) { notes, pinnedNotes ->
+            orderNotes(notes, pinnedNotes, username)
         }
     }
 
-    suspend fun loadFromCloud() {
-        val cloudNotesData = download("/notes.json")
-        val cloudNoteUserCrossRefsData = download("/noteUserCrossRefs.json")
-        if (cloudNotesData.isNotEmpty()) {
-            val notes: List<Note> = ObjectMapper().readValue(cloudNotesData)
-            noteDao.insert(notes)
+    private fun orderNotes(
+        notes: List<Note>,
+        pinnedNotes: List<NoteUserCrossRef>,
+        username: String,
+    ): List<Note> {
+        return notes.filter { note ->
+            pinnedNotes.contains(
+                NoteUserCrossRef(note.noteId, username, true)
+            )
+        }.plus(
+            notes.filter { note ->
+                pinnedNotes.contains(
+                    NoteUserCrossRef(note.noteId, username, false)
+                )
+            }
+        ).map { note ->
+            note.copy(
+                pinned = pinnedNotes.contains(
+                    NoteUserCrossRef(note.noteId, username, true)
+                )
+            )
         }
-        if (cloudNoteUserCrossRefsData.isNotEmpty()) {
-            val noteUserCrossRefs: List<NoteUserCrossRef> =
-                ObjectMapper().readValue(cloudNoteUserCrossRefsData)
-            noteDao.insertUserInNote(noteUserCrossRefs)
-        }
-    }
-
-    fun getById(id: Int): Flow<Note> {
-        return noteDao.getByID(id)
     }
 
     fun getByIdWithFolders(id: Int): Flow<NoteWithFolders> {
         return noteDao.getByIdWithFolders(id)
+    }
+
+    fun getFolderWithOrderedNotesFlow(
+        folderWithNotes: Flow<FolderWithNotes>,
+        username: String,
+    ): Flow<FolderWithNotes> {
+        return folderWithNotes.combine(pinnedNotes) { fwn, pinnedNotes ->
+            fwn.copy(
+                notes = orderNotes(fwn.notes, pinnedNotes, username)
+            )
+        }
+    }
+
+    fun getFoldersWithOrderedNotesFlow(
+        allFoldersWithNotesFromUser: Flow<List<FolderWithNotes>>,
+        username: String,
+    ): Flow<List<FolderWithNotes>> {
+        return allFoldersWithNotesFromUser.combine(pinnedNotes) { list, pinnedNotes ->
+            list.map { fwn ->
+                fwn.copy(
+                    notes = orderNotes(fwn.notes, pinnedNotes, username)
+                )
+            }
+        }
     }
 
     fun getUserIdsById(id: Int): Flow<List<String>> {
@@ -72,10 +112,7 @@ class NoteRepository(private val noteDao: NoteDao) {
         return pinnedNotes
     }
 
-    fun getFolderNoteCrossRef(): Flow<List<FolderNoteCrossRef>> {
-        return noteDao.getFolderNoteCrossRef()
-    }
-
+    // Manage entities.
     @WorkerThread
     suspend fun insert(note: Note): Int {
         return noteDao.insert(note).toInt()
@@ -106,14 +143,16 @@ class NoteRepository(private val noteDao: NoteDao) {
         noteDao.delete(note)
     }
 
-    @WorkerThread
-    suspend fun deleteAll() {
-        noteDao.deleteAllNotes()
-        //noteDao.deleteAllNoteUserCrossRefs()
+    // Cloud.
+    suspend fun saveOnCloud() {
+        CloudManager.saveOnCloud(getAll(), "notes")
+        CloudManager.saveOnCloud(noteDao.getAllNoteUserCrossRef(), "noteUserCrossRefs")
     }
 
-    @WorkerThread
-    suspend fun deleteAllNoteUserCrossRefs() {
-        noteDao.deleteAllNoteUserCrossRefs()
+    suspend fun loadFromCloud() {
+        val cloudNotes = CloudManager.loadFromCloud<Note>("notes")
+        val cloudRefs = CloudManager.loadFromCloud<NoteUserCrossRef>("noteUserCrossRefs")
+        if (cloudNotes.isNotEmpty()) noteDao.insert(cloudNotes)
+        if (cloudRefs.isNotEmpty()) noteDao.insertUserInNote(cloudRefs)
     }
 }

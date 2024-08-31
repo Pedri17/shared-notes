@@ -1,4 +1,4 @@
-package com.pproject.sharednotes.ui.theme
+package com.pproject.sharednotes.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 

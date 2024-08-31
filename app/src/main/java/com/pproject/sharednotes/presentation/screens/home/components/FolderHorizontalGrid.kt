@@ -1,6 +1,5 @@
 package com.pproject.sharednotes.presentation.screens.home.components
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,7 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.FolderDelete
 import androidx.compose.material.icons.filled.PostAdd
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material3.Divider
@@ -30,9 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.pproject.sharednotes.R
-import com.pproject.sharednotes.data.db.entity.Folder
-import com.pproject.sharednotes.data.db.entity.Note
-import com.pproject.sharednotes.presentation.common.BasicIconButton
+import com.pproject.sharednotes.data.local.entity.Folder
+import com.pproject.sharednotes.data.local.entity.Note
+import com.pproject.sharednotes.presentation.common.button.BasicIconButton
 import com.pproject.sharednotes.presentation.common.NoteCard
 import com.pproject.sharednotes.presentation.navigation.AppScreens
 

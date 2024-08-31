@@ -11,10 +11,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.pproject.sharednotes.R
-import com.pproject.sharednotes.presentation.common.BackNavigationHeader
-import com.pproject.sharednotes.presentation.common.BasicIconButton
-import com.pproject.sharednotes.presentation.common.BasicIconToggleButton
-import com.pproject.sharednotes.presentation.common.Header
+import com.pproject.sharednotes.presentation.common.header.BackNavigationHeader
+import com.pproject.sharednotes.presentation.common.button.BasicIconButton
+import com.pproject.sharednotes.presentation.common.button.BasicIconToggleButton
 import com.pproject.sharednotes.presentation.common.dialog.ConfirmationDialog
 
 @Composable

@@ -1,41 +1,33 @@
 package com.pproject.sharednotes.presentation.screens.home
 
 import android.content.Context
-import android.util.Log
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.navigation.NavController
 import com.pproject.sharednotes.app.SharedNotesApplication
-import com.pproject.sharednotes.data.db.entity.Folder
-import com.pproject.sharednotes.data.db.entity.FolderNoteCrossRef
-import com.pproject.sharednotes.data.db.entity.FolderWithNotes
-import com.pproject.sharednotes.data.db.entity.Note
-import com.pproject.sharednotes.data.db.entity.NoteUserCrossRef
-import com.pproject.sharednotes.data.db.entity.Notification
-import com.pproject.sharednotes.data.db.entity.NotificationWithNote
+import com.pproject.sharednotes.data.local.entity.Folder
+import com.pproject.sharednotes.data.local.entity.FolderWithNotes
+import com.pproject.sharednotes.data.local.entity.Note
+import com.pproject.sharednotes.data.local.entity.Notification
+import com.pproject.sharednotes.data.local.entity.NotificationWithNote
 import com.pproject.sharednotes.data.repository.FolderRepository
 import com.pproject.sharednotes.data.repository.NoteRepository
 import com.pproject.sharednotes.data.repository.NotificationRepository
 import com.pproject.sharednotes.data.repository.PreferencesRepository
 import com.pproject.sharednotes.presentation.navigation.AppScreens
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
-    private val savedStateHandle: SavedStateHandle,
+    savedStateHandle: SavedStateHandle,
     private val folderRepository: FolderRepository,
     private val noteRepository: NoteRepository,
     private val notificationRepository: NotificationRepository,
@@ -49,77 +41,25 @@ class HomeViewModel(
         }
     }
 
+    // Navigation arguments.
     val activeUser: String = checkNotNull(savedStateHandle["user"])
-    private val pinnedNotes = noteRepository.getPinnedNotes()
-    private val foldersUser = folderRepository.getAllByUser(activeUser)
-    private var folderNoteCrossRefFromUserFolders =
-        noteRepository.getFolderNoteCrossRef().combine(foldersUser) { fncr, foldersUser ->
-            fncr.filter {
-                var found = false
-                foldersUser.forEach { folder ->
-                    if (it.folderId == folder.folderId) found = true
-                }
-                found
-            }
-        }
 
-    var notesWithoutFolder =
-        noteRepository.getAll().combine(folderNoteCrossRefFromUserFolders) { notes, cross ->
-            notes.filter { note ->
-                var found = true
-                cross.forEach {
-                    if (it.noteId == note.noteId) found = false
-                }
-                found
-            }
-        }.combine(pinnedNotes) { notes, pinnedNotes ->
-            notes.filter { note ->
-                pinnedNotes.contains(
-                    NoteUserCrossRef(note.noteId, activeUser, true)
-                )
-            }.plus(
-                notes.filter { note ->
-                    pinnedNotes.contains(
-                        NoteUserCrossRef(note.noteId, activeUser, false)
-                    )
-                }
-            ).map { note ->
-                note.copy(
-                    pinned = pinnedNotes.contains(
-                        NoteUserCrossRef(note.noteId, activeUser, true)
-                    )
-                )
-            }
-        }.asLiveData()
+    // Data flows.
+    private val notifications: Flow<List<NotificationWithNote>> =
+        notificationRepository.getAllWithNoteToUser(activeUser)
 
-    var foldersWithNotes: LiveData<List<FolderWithNotes>> =
-        folderRepository.getAllByUserWithNotes(activeUser)
-            .combine(pinnedNotes) { list, pinnedNotes ->
-                list.map { fwn ->
-                    fwn.copy(
-                        notes = fwn.notes.filter { note ->
-                            pinnedNotes.contains(
-                                NoteUserCrossRef(note.noteId, activeUser, true)
-                            )
-                        }.plus(
-                            fwn.notes.filter { note ->
-                                pinnedNotes.contains(
-                                    NoteUserCrossRef(note.noteId, activeUser, false)
-                                )
-                            }
-                        ).map { note ->
-                            note.copy(
-                                pinned = pinnedNotes.contains(
-                                    NoteUserCrossRef(note.noteId, activeUser, true)
-                                )
-                            )
-                        }
-                    )
-                }
-            }.asLiveData()
+    val notesWithoutFolder = noteRepository.getOrderedOutOfFolders(
+        folderRepository.getAllByUser(activeUser),
+        activeUser
+    ).asLiveData()
 
-    private var notifications: Flow<List<NotificationWithNote>> = notificationRepository.getAllWithNoteToUser(activeUser)
+    val foldersWithNotes: LiveData<List<FolderWithNotes>> =
+        noteRepository.getFoldersWithOrderedNotesFlow(
+            folderRepository.getAllByUserWithNotes(activeUser),
+            activeUser
+        ).asLiveData()
 
+    // Notification functions.
     fun getNotificationPairs(context: Context): LiveData<List<Pair<Int, String>>> {
         return notifications.map { list ->
             list.map { notWithNote ->
@@ -159,8 +99,21 @@ class HomeViewModel(
         }
     }
 
-    fun createNewFolder() = viewModelScope.launch {
-        folderRepository.insert(Folder(userName = activeUser))
+    // Account functions
+    fun logOut(navController: NavController) = viewModelScope.launch {
+        val activeSessionPreference = preferencesRepository.getActivePreference().firstOrNull()
+        if (activeSessionPreference != null) {
+            preferencesRepository.insert(activeSessionPreference.copy(activeSession = false))
+        }
+        navController.navigate(AppScreens.LoginScreen.route)
+    }
+
+    // Folder functions.
+    fun createNewFolder(navController: NavController) = viewModelScope.launch {
+        val folderId: Int = folderRepository.insert(Folder(userName = activeUser))
+        navController.navigate(
+            "${AppScreens.FolderScreen.route}/${activeUser}/true/${folderId}"
+        )
         folderRepository.saveOnCloud()
     }
 
@@ -183,14 +136,6 @@ class HomeViewModel(
         folderRepository.saveOnCloud()
     }
 
-    fun logOut(navController: NavController) = viewModelScope.launch {
-        val activeSessionPreference = preferencesRepository.getActivePreference().firstOrNull()
-        if (activeSessionPreference != null) {
-            preferencesRepository.insert(activeSessionPreference.copy(activeSession = false))
-        }
-        navController.navigate(AppScreens.LoginScreen.route)
-    }
-
     companion object {
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -198,7 +143,9 @@ class HomeViewModel(
                 modelClass: Class<T>,
                 extras: CreationExtras
             ): T {
-                val application = checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]) as SharedNotesApplication
+                val application =
+                    checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])
+                            as SharedNotesApplication
                 val savedStateHandle = extras.createSavedStateHandle()
 
                 return HomeViewModel(

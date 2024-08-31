@@ -1,4 +1,4 @@
-package com.pproject.sharednotes.data.db.dao
+package com.pproject.sharednotes.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -7,11 +7,10 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.pproject.sharednotes.data.db.entity.FolderNoteCrossRef
-import com.pproject.sharednotes.data.db.entity.Note
-import com.pproject.sharednotes.data.db.entity.NoteUserCrossRef
-import com.pproject.sharednotes.data.db.entity.NoteWithFolders
-import com.pproject.sharednotes.data.db.entity.User
+import com.pproject.sharednotes.data.local.entity.FolderNoteCrossRef
+import com.pproject.sharednotes.data.local.entity.Note
+import com.pproject.sharednotes.data.local.entity.NoteUserCrossRef
+import com.pproject.sharednotes.data.local.entity.NoteWithFolders
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -21,9 +20,6 @@ interface NoteDao {
 
     @Query("SELECT * FROM noteusercrossref")
     fun getAllNoteUserCrossRef(): Flow<List<NoteUserCrossRef>>
-
-    @Query("SELECT * FROM note WHERE noteId in (:noteId)")
-    fun getByID(noteId: Int): Flow<Note>
 
     @Query("SELECT * FROM note WHERE noteId in (:noteId)")
     fun getByIdWithFolders(noteId: Int): Flow<NoteWithFolders>
@@ -56,15 +52,6 @@ interface NoteDao {
     @Delete
     suspend fun delete(note: Note)
 
-    @Query("DELETE FROM note")
-    suspend fun deleteAllNotes()
-
-    @Query("DELETE FROM noteusercrossref")
-    suspend fun deleteAllNoteUserCrossRefs()
-
     @Delete
     suspend fun deleteUserInNote(noteUserCrossRef: NoteUserCrossRef)
-
-    @Query("DELETE FROM note WHERE noteId = (:noteId)")
-    suspend fun deleteById(noteId: Int);
 }

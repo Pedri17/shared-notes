@@ -1,67 +1,36 @@
 package com.pproject.sharednotes.data.repository
 
-import android.content.Context
-import android.util.Log
 import androidx.annotation.WorkerThread
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.pproject.sharednotes.data.db.dao.UserDao
-import com.pproject.sharednotes.data.db.entity.User
-import com.pproject.sharednotes.data.db.entity.UserWithFolders
-import com.pproject.sharednotes.data.network.download
-import com.pproject.sharednotes.data.network.upload
+import com.pproject.sharednotes.data.local.dao.UserDao
+import com.pproject.sharednotes.data.local.entity.User
+import com.pproject.sharednotes.data.cloud.CloudManager
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.lastOrNull
-import kotlinx.coroutines.flow.map
-import org.json.JSONObject
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.InputStream
-import java.io.OutputStream
-import java.io.Writer
 
 class UserRepository(private val userDao: UserDao) {
-    private val allUserWithFolders = userDao.getAllWithFolders()
     private val allUsers = userDao.getAll()
 
+    // Getters.
     fun getAll(): Flow<List<User>> {
         return allUsers
-    }
-
-    suspend fun saveOnCloud() {
-        val users = getAll().firstOrNull()
-        val output = ByteArrayOutputStream()
-        if (users != null) {
-            ObjectMapper().writeValue(output, users)
-            upload("users.json", output.toByteArray())
-        }
-    }
-
-    suspend fun loadFromCloud() {
-        val cloudData = download("/users.json")
-        if (cloudData.isNotEmpty()) {
-            val users: List<User> = ObjectMapper().readValue(cloudData)
-            userDao.insert(users)
-        }
-    }
-
-    fun getAllWithNotes(): Flow<List<UserWithFolders>> {
-        return allUserWithFolders
     }
 
     fun getUser(name: String): Flow<User> {
         return userDao.getByID(name)
     }
 
+    // Manage entities.
     @WorkerThread
     suspend fun insert(user: User) {
         userDao.insert(user)
     }
 
-    @WorkerThread
-    suspend fun deleteAll() {
-        userDao.deleteAll()
+    // Cloud.
+    suspend fun saveOnCloud() {
+        CloudManager.saveOnCloud(getAll(), "users")
+    }
+
+    suspend fun loadFromCloud() {
+        val cloudData: List<User> = CloudManager.loadFromCloud("users")
+        if (cloudData.isNotEmpty()) userDao.insert(cloudData)
     }
 }

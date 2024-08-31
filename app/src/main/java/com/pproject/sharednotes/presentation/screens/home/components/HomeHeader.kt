@@ -1,15 +1,11 @@
 package com.pproject.sharednotes.presentation.screens.home.components
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Output
 import androidx.compose.material3.Divider
@@ -24,10 +20,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pproject.sharednotes.R
-import com.pproject.sharednotes.data.db.entity.Notification
-import com.pproject.sharednotes.presentation.common.BasicIconButton
-import com.pproject.sharednotes.presentation.common.BasicIconToggleButton
-import com.pproject.sharednotes.presentation.common.Header
+import com.pproject.sharednotes.presentation.common.button.BasicIconButton
+import com.pproject.sharednotes.presentation.common.button.BasicIconToggleButton
+import com.pproject.sharednotes.presentation.common.header.Header
 import com.pproject.sharednotes.presentation.common.dialog.NameListManagerDialog
 
 @Composable

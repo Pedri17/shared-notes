@@ -1,4 +1,4 @@
-package com.pproject.sharednotes.data.db.entity
+package com.pproject.sharednotes.data.local.entity
 
 import android.content.Context
 import androidx.room.Embedded

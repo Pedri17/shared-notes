@@ -36,7 +36,7 @@ fun RegisterScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 30.dp)
-        ){
+        ) {
             Spacer(modifier = Modifier.height(10.dp))
             DataTextField(
                 value = registerViewModel.uiState.username,

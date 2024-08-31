@@ -1,4 +1,4 @@
-package com.pproject.sharednotes.presentation.common
+package com.pproject.sharednotes.presentation.common.header
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row

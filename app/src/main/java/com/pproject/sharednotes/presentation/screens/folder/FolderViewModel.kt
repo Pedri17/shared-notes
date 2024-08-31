@@ -16,16 +16,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.navigation.NavController
 import com.pproject.sharednotes.app.SharedNotesApplication
-import com.pproject.sharednotes.data.db.entity.FolderWithNotes
-import com.pproject.sharednotes.data.db.entity.Note
-import com.pproject.sharednotes.data.db.entity.NoteUserCrossRef
+import com.pproject.sharednotes.data.local.entity.FolderWithNotes
+import com.pproject.sharednotes.data.local.entity.Note
 import com.pproject.sharednotes.data.repository.FolderRepository
 import com.pproject.sharednotes.data.repository.NoteRepository
 import com.pproject.sharednotes.presentation.navigation.AppScreens
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 data class FolderUiState(
@@ -38,7 +33,7 @@ data class FolderUiState(
 }
 
 class FolderViewModel(
-    private val savedStateHandle: SavedStateHandle,
+    savedStateHandle: SavedStateHandle,
     private val folderRepository: FolderRepository,
     private val noteRepository: NoteRepository,
 ) : ViewModel() {
@@ -49,48 +44,38 @@ class FolderViewModel(
         }
     }
 
+    // Navigation arguments.
     val activeUser: String = checkNotNull(savedStateHandle["user"])
     var isNewFolder: Boolean = checkNotNull(savedStateHandle["newFolder"])
     private val openFolderId: Int = checkNotNull(savedStateHandle[AppScreens.FolderScreen.argument])
-    private val pinnedNotes = noteRepository.getPinnedNotes()
-    val folderWithNotes: LiveData<FolderWithNotes> =
-        folderRepository.getWithNotesById(openFolderId).combine(pinnedNotes) { fwn, pinnedNotes ->
-            fwn.copy(
-                notes = fwn.notes.filter {
-                    pinnedNotes.contains(NoteUserCrossRef(it.noteId, activeUser, true))
-                }.plus(
-                    fwn.notes.filter {
-                        pinnedNotes.contains(NoteUserCrossRef(it.noteId, activeUser, false))
-                    }
-                ).map { note ->
-                    note.copy(
-                        pinned = pinnedNotes.contains(
-                            NoteUserCrossRef(note.noteId, activeUser, true)
-                        )
-                    )
-                }
-            )
-        }.asLiveData()
 
+    // Data flows.
+    val folderWithNotes: LiveData<FolderWithNotes> = noteRepository.getFolderWithOrderedNotesFlow(
+        folderRepository.getWithNotesById(openFolderId),
+        activeUser
+    ).asLiveData()
+
+    // Screen state.
     var uiState by mutableStateOf(
         FolderUiState(
             title = TextFieldValue("")
         )
     )
 
+    fun loadFolder() = viewModelScope.launch {
+        folderWithNotes.value?.let {
+            uiState = uiState.copy(title = uiState.title.copy(text = it.folder.title))
+        }
+        setTitleCursorToEnd()
+    }
+
     fun updateIsNewFolder(value: Boolean) {
         isNewFolder = value
     }
 
+    // Title functions.
     fun updateTitle(newTitle: TextFieldValue) {
         uiState = uiState.copy(title = newTitle)
-    }
-
-    private fun saveTitle() = viewModelScope.launch {
-        folderWithNotes.value?.let {
-            folderRepository.update(it.folder.copy(title = uiState.title.text))
-            folderRepository.saveOnCloud()
-        }
     }
 
     private fun setTitleCursorToEnd() {
@@ -99,11 +84,11 @@ class FolderViewModel(
         )
     }
 
-    fun loadFolder() = viewModelScope.launch {
+    private fun saveTitle() = viewModelScope.launch {
         folderWithNotes.value?.let {
-            uiState = uiState.copy(title = uiState.title.copy(text = it.folder.title))
+            folderRepository.update(it.folder.copy(title = uiState.title.text))
+            folderRepository.saveOnCloud()
         }
-        setTitleCursorToEnd()
     }
 
     fun updateCanEditTitle(canEdit: Boolean) {
@@ -115,6 +100,7 @@ class FolderViewModel(
         uiState = uiState.copy(canEditTitle = canEdit)
     }
 
+    // Folder functions.
     fun createNoteInThisFolder(navController: NavController) = viewModelScope.launch {
         val newNoteId: Int = noteRepository.insert(Note())
         folderWithNotes.value?.let {

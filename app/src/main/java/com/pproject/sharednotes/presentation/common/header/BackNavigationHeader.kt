@@ -1,10 +1,11 @@
-package com.pproject.sharednotes.presentation.common
+package com.pproject.sharednotes.presentation.common.header
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.pproject.sharednotes.presentation.common.button.BasicIconButton
 
 @Composable
 fun BackNavigationHeader(

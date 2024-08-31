@@ -1,7 +1,7 @@
 package com.pproject.sharednotes.data
 
 import android.content.Context
-import com.pproject.sharednotes.data.db.database.SharedNotesDatabase
+import com.pproject.sharednotes.data.local.database.SharedNotesDatabase
 import com.pproject.sharednotes.data.repository.FolderRepository
 import com.pproject.sharednotes.data.repository.NoteRepository
 import com.pproject.sharednotes.data.repository.NotificationRepository

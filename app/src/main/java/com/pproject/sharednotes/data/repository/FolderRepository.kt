@@ -1,65 +1,24 @@
 package com.pproject.sharednotes.data.repository
 
 import androidx.annotation.WorkerThread
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.pproject.sharednotes.data.db.dao.FolderDao
-import com.pproject.sharednotes.data.db.entity.Folder
-import com.pproject.sharednotes.data.db.entity.FolderNoteCrossRef
-import com.pproject.sharednotes.data.db.entity.FolderWithNotes
-import com.pproject.sharednotes.data.db.entity.Note
-import com.pproject.sharednotes.data.db.entity.NoteUserCrossRef
-import com.pproject.sharednotes.data.network.download
-import com.pproject.sharednotes.data.network.upload
+import com.pproject.sharednotes.data.local.dao.FolderDao
+import com.pproject.sharednotes.data.local.entity.Folder
+import com.pproject.sharednotes.data.local.entity.FolderNoteCrossRef
+import com.pproject.sharednotes.data.local.entity.FolderWithNotes
+import com.pproject.sharednotes.data.cloud.CloudManager
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
-import java.io.ByteArrayOutputStream
 
 class FolderRepository(private val folderDao: FolderDao) {
     private val allFolders = folderDao.getAll()
-    private val allWithNotes = folderDao.getAllWithNotes()
 
+    // Getters.
     fun getAll(): Flow<List<Folder>> {
         return allFolders
     }
 
-    suspend fun saveOnCloud() {
-        val folders = getAll().firstOrNull()
-        val folderNoteCrossRefs = folderDao.getAllFolderNoteCrossRef().firstOrNull()
-        val output = ByteArrayOutputStream()
-        if (folders != null) {
-            ObjectMapper().writeValue(output, folders)
-            upload("folders.json", output.toByteArray())
-            output.reset()
-        }
-        if (folderNoteCrossRefs != null) {
-            ObjectMapper().writeValue(output, folderNoteCrossRefs)
-            upload("folderNoteCrossRefs.json", output.toByteArray())
-        }
-    }
-
-    suspend fun loadFromCloud() {
-        val cloudFoldersData = download("/folders.json")
-        val cloudFolderNoteCrossRefsData = download("/folderNoteCrossRefs.json")
-        if (cloudFoldersData.isNotEmpty()) {
-            val folders: List<Folder> = ObjectMapper().readValue(cloudFoldersData)
-            folderDao.insert(folders)
-        }
-        if (cloudFolderNoteCrossRefsData.isNotEmpty()) {
-            val noteUserCrossRefs: List<FolderNoteCrossRef> =
-                ObjectMapper().readValue(cloudFolderNoteCrossRefsData)
-            folderDao.insertNoteInFolder(noteUserCrossRefs)
-        }
-    }
-
     fun getAllByUser(username: String): Flow<List<Folder>> {
         return folderDao.getAllByUser(username)
-    }
-
-
-    fun getAllWithNotes(): Flow<List<FolderWithNotes>> {
-        return allWithNotes
     }
 
     fun getAllByUserWithNotes(username: String): Flow<List<FolderWithNotes>> {
@@ -78,10 +37,7 @@ class FolderRepository(private val folderDao: FolderDao) {
         return folderDao.getWithNotesById(id)
     }
 
-    fun getNotesById(id: Int): Flow<List<Note>> {
-        return folderDao.getNotesById(id)
-    }
-
+    // Manage entities.
     @WorkerThread
     suspend fun insert(folder: Folder): Int {
         return folderDao.insert(folder).toInt()
@@ -107,13 +63,16 @@ class FolderRepository(private val folderDao: FolderDao) {
         folderDao.deleteNoteInFolder(FolderNoteCrossRef(noteId, folderId))
     }
 
-    @WorkerThread
-    suspend fun deleteAllFolders() {
-        folderDao.deleteAllFolders()
+    // Cloud.
+    suspend fun saveOnCloud() {
+        CloudManager.saveOnCloud(getAll(), "folders")
+        CloudManager.saveOnCloud(folderDao.getAllFolderNoteCrossRef(), "folderNoteCrossRefs")
     }
 
-    @WorkerThread
-    suspend fun deleteAllFolderNoteCrossRefs() {
-        folderDao.deleteAllFolderNoteCrossRef()
+    suspend fun loadFromCloud() {
+        val cloudFolders = CloudManager.loadFromCloud<Folder>("folders")
+        val cloudRefs = CloudManager.loadFromCloud<FolderNoteCrossRef>("folderNoteCrossRefs")
+        if (cloudFolders.isNotEmpty()) folderDao.insert(cloudFolders)
+        if (cloudRefs.isNotEmpty()) folderDao.insertNoteInFolder(cloudRefs)
     }
 }

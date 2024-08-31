@@ -18,12 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.pproject.sharednotes.data.db.entity.Note
-import com.pproject.sharednotes.data.db.entity.NoteWithFolders
+import com.pproject.sharednotes.data.local.entity.Note
+import com.pproject.sharednotes.data.local.entity.NoteWithFolders
 import com.pproject.sharednotes.presentation.screens.note.components.EditableTitle
 import com.pproject.sharednotes.presentation.screens.note.components.NoteHeader
-import com.pproject.sharednotes.presentation.screens.note.components.Section
-import com.pproject.sharednotes.presentation.screens.note.components.SectionsField
 
 @Composable
 fun NoteScreen(
@@ -37,11 +35,10 @@ fun NoteScreen(
         Scaffold(
             topBar = {
                 NoteHeader(
-                    onClickBack = { noteViewModel.backToLastScreen(navController) },
-                    note = note.note,
                     users = users,
                     isPinnedNote = noteViewModel.uiState.pinned,
                     selectedFolder = noteViewModel.getSelectedFolderId(),
+                    onClickBack = { noteViewModel.backToLastScreen(navController) },
                     onChangeFolder = { old, new -> noteViewModel.updateFolder(old, new) },
                     folderList = folderPairNames,
                     onAddCollaborator = { noteViewModel.inviteCollaborator(it) },

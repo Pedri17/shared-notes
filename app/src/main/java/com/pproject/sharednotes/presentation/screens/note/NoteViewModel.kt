@@ -1,43 +1,28 @@
 package com.pproject.sharednotes.presentation.screens.note
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.pproject.sharednotes.data.db.entity.Note
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.SavedStateViewModelFactory
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
 import com.pproject.sharednotes.app.SharedNotesApplication
-import com.pproject.sharednotes.data.db.entity.FolderNoteCrossRef
-import com.pproject.sharednotes.data.db.entity.NoteUserCrossRef
-import com.pproject.sharednotes.data.db.entity.NoteWithFolders
-import com.pproject.sharednotes.data.db.entity.Notification
+import com.pproject.sharednotes.data.local.entity.NoteUserCrossRef
+import com.pproject.sharednotes.data.local.entity.NoteWithFolders
+import com.pproject.sharednotes.data.local.entity.Notification
 import com.pproject.sharednotes.data.repository.FolderRepository
 import com.pproject.sharednotes.data.repository.NoteRepository
 import com.pproject.sharednotes.data.repository.NotificationRepository
 import com.pproject.sharednotes.presentation.navigation.AppScreens
-import com.pproject.sharednotes.presentation.screens.folder.FolderViewModel
-import com.pproject.sharednotes.presentation.screens.note.components.Section
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.launch
 
 data class NoteUiState(
@@ -52,7 +37,7 @@ data class NoteUiState(
 }
 
 class NoteViewModel(
-    private val savedStateHandle: SavedStateHandle,
+    savedStateHandle: SavedStateHandle,
     private val noteRepository: NoteRepository,
     private val folderRepository: FolderRepository,
     private val notificationRepository: NotificationRepository,
@@ -65,12 +50,16 @@ class NoteViewModel(
         }
     }
 
+    // Navigation arguments.
     private val activeUser: String = checkNotNull(savedStateHandle["user"])
     private val openNoteId: Int = checkNotNull(savedStateHandle[AppScreens.NoteScreen.argument])
+
+    // Data flows.
     val allPairNameFolders = folderRepository.getAllPairNamesByUser(activeUser).asLiveData()
     val note: LiveData<NoteWithFolders> = noteRepository.getByIdWithFolders(openNoteId).asLiveData()
     val users: LiveData<List<String>> = noteRepository.getUserIdsById(openNoteId).asLiveData()
 
+    // Screen state.
     var uiState by mutableStateOf(
         NoteUiState(
             title = note.value?.note?.title ?: "",
@@ -99,6 +88,12 @@ class NoteViewModel(
         }
     }
 
+    fun backToLastScreen(navController: NavController) = viewModelScope.launch {
+        navController.popBackStack()
+        noteRepository.saveOnCloud()
+    }
+
+    // Note functions.
     fun getSelectedFolderId(): Int? {
         note.value?.let {
             return it.getSelectedFolderId(activeUser)
@@ -120,18 +115,6 @@ class NoteViewModel(
         }
     }
 
-    fun deleteNote(navController: NavController) = viewModelScope.launch {
-        note.value?.let { note ->
-            noteRepository.deleteUserInNote(note.note.noteId, activeUser)
-            users.value?.let {
-                if (it.isEmpty()) {
-                    noteRepository.delete(note.note)
-                }
-            }
-        }
-        backToLastScreen(navController)
-    }
-
     fun updatePinned(newPinned: Boolean) = viewModelScope.launch {
         getSelectedFolderId()?.let {
             noteRepository.insertUserInNote(openNoteId, activeUser, newPinned)
@@ -147,6 +130,19 @@ class NoteViewModel(
         }
     }
 
+    fun deleteNote(navController: NavController) = viewModelScope.launch {
+        note.value?.let { note ->
+            noteRepository.deleteUserInNote(note.note.noteId, activeUser)
+            users.value?.let {
+                if (it.isEmpty()) {
+                    noteRepository.delete(note.note)
+                }
+            }
+        }
+        backToLastScreen(navController)
+    }
+
+    // Collaborator functions.
     fun inviteCollaborator(collaboratorName: String) = viewModelScope.launch {
         note.value?.let {
             notificationRepository.insert(
@@ -172,11 +168,6 @@ class NoteViewModel(
                 )
             )
         }
-    }
-
-    fun backToLastScreen(navController: NavController) = viewModelScope.launch {
-        navController.popBackStack()
-        noteRepository.saveOnCloud()
     }
 
     companion object {

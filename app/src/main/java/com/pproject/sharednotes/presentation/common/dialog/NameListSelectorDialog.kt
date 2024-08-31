@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pproject.sharednotes.R
+import com.pproject.sharednotes.presentation.common.dialog.element.SelectableTitleElement
 
 @Composable
 fun <T : Any> NameListSelectorDialog(

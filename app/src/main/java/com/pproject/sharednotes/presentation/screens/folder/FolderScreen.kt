@@ -19,10 +19,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.pproject.sharednotes.data.db.entity.Folder
-import com.pproject.sharednotes.data.db.entity.FolderWithNotes
+import com.pproject.sharednotes.data.local.entity.Folder
+import com.pproject.sharednotes.data.local.entity.FolderWithNotes
 import com.pproject.sharednotes.presentation.common.NoteCard
-import com.pproject.sharednotes.presentation.navigation.AppScreens
 import com.pproject.sharednotes.presentation.screens.folder.components.FolderHeader
 import com.pproject.sharednotes.presentation.screens.folder.components.OnTriggerEditableTitle
 

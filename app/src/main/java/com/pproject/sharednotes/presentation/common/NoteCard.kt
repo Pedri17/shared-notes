@@ -28,7 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.pproject.sharednotes.data.db.entity.Note
+import com.pproject.sharednotes.data.local.entity.Note
 import com.pproject.sharednotes.presentation.navigation.AppScreens
 
 @Composable

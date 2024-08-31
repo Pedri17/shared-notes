@@ -3,13 +3,10 @@ package com.pproject.sharednotes.presentation.screens.note.components
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PushPin
-import androidx.compose.material.icons.filled.Unarchive
-import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.PersonAdd
 import androidx.compose.material.icons.outlined.PushPin
@@ -20,23 +17,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pproject.sharednotes.R
-import com.pproject.sharednotes.data.db.entity.Note
-import com.pproject.sharednotes.presentation.common.BackNavigationHeader
-import com.pproject.sharednotes.presentation.common.BasicIconButton
-import com.pproject.sharednotes.presentation.common.BasicIconToggleButton
+import com.pproject.sharednotes.presentation.common.header.BackNavigationHeader
+import com.pproject.sharednotes.presentation.common.button.BasicIconButton
+import com.pproject.sharednotes.presentation.common.button.BasicIconToggleButton
 import com.pproject.sharednotes.presentation.common.dialog.ConfirmationDialog
 import com.pproject.sharednotes.presentation.common.dialog.NameListManagerDialog
 import com.pproject.sharednotes.presentation.common.dialog.NameListSelectorDialog
 
-
 @Composable
 fun NoteHeader(
-    onClickBack: () -> Unit,
-    note: Note,
     users: List<String>,
     isPinnedNote: Boolean,
     selectedFolder: Int?,
     folderList: List<Pair<Int, String>>,
+    onClickBack: () -> Unit,
     onChangeFolder: (Int?, Int?) -> Unit,
     onAddCollaborator: (String) -> Unit,
     onDeleteCollaborator: (String) -> Unit,

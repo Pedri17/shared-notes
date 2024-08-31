@@ -1,21 +1,17 @@
 package com.pproject.sharednotes.presentation.screens.register
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.navigation.NavController
 import com.pproject.sharednotes.R
 import com.pproject.sharednotes.app.SharedNotesApplication
-import com.pproject.sharednotes.data.db.entity.User
+import com.pproject.sharednotes.data.local.entity.User
 import com.pproject.sharednotes.data.repository.UserRepository
 import com.pproject.sharednotes.presentation.navigation.AppScreens
 import kotlinx.coroutines.flow.firstOrNull
@@ -32,12 +28,13 @@ data class RegisterUiState(
 }
 
 class RegisterViewModel(
-    private val savedStateHandle: SavedStateHandle,
     private val userRepository: UserRepository,
 ) : ViewModel() {
+    // Screen state.
     var uiState by mutableStateOf(RegisterUiState())
         private set
 
+    // Form functions.
     fun updateUsername(newUsername: String) {
         uiState = uiState.copy(username = newUsername)
     }
@@ -54,6 +51,7 @@ class RegisterViewModel(
         uiState = uiState.copy(username = "", password = "", repeatPassword = "")
     }
 
+    // Register functions.
     fun saveUser(navController: NavController) = viewModelScope.launch {
         if (userRepository.getUser(uiState.username).firstOrNull() == null) {
             if (uiState.password == uiState.repeatPassword) { // Correct passwords.
@@ -86,11 +84,11 @@ class RegisterViewModel(
                 modelClass: Class<T>,
                 extras: CreationExtras
             ): T {
-                val application = checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]) as SharedNotesApplication
-                val savedStateHandle = extras.createSavedStateHandle()
+                val application =
+                    checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])
+                            as SharedNotesApplication
 
                 return RegisterViewModel(
-                    savedStateHandle,
                     userRepository = application.container.userRepository,
                 ) as T
             }
