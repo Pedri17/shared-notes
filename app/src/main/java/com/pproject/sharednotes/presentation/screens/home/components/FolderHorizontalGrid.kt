@@ -15,7 +15,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.PostAdd
 import androidx.compose.material.icons.outlined.Folder
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -98,7 +98,7 @@ fun FolderHorizontalGrid(
                     }
                 }
             }
-            Divider()
+            HorizontalDivider()
             LazyRow(
                 modifier = Modifier.height(200.dp),
             ) {

@@ -8,7 +8,7 @@ import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Output
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -61,7 +61,7 @@ fun HomeHeader(
 
             },
         )
-        Divider(
+        HorizontalDivider(
             color = MaterialTheme.colorScheme.inverseOnSurface
         )
     }
