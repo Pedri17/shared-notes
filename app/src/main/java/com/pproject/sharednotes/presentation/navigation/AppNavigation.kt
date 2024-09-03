@@ -15,7 +15,9 @@ import com.pproject.sharednotes.presentation.screens.register.RegisterScreen
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = AppScreens.LoginScreen.route) {
+    NavHost(
+        navController = navController, startDestination = AppScreens.LoginScreen.route,
+    ) {
         composable(route = AppScreens.LoginScreen.route) {
             LoginScreen(navController)
         }

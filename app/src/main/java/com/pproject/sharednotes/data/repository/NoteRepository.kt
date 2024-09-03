@@ -152,7 +152,7 @@ class NoteRepository(private val noteDao: NoteDao) {
     suspend fun loadFromCloud() {
         val cloudNotes = CloudManager.loadFromCloud<Note>("notes")
         val cloudRefs = CloudManager.loadFromCloud<NoteUserCrossRef>("noteUserCrossRefs")
-        if (cloudNotes.isNotEmpty()) noteDao.insert(cloudNotes)
         if (cloudRefs.isNotEmpty()) noteDao.insertUserInNote(cloudRefs)
+        if (cloudNotes.isNotEmpty()) noteDao.insert(cloudNotes)
     }
 }

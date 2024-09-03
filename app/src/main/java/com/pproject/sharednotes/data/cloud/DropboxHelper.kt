@@ -10,7 +10,6 @@ import kotlinx.coroutines.withContext
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
-import java.io.OutputStream
 
 class DropboxHelper : CloudHelper {
     private val credentials = DbxCredential(
@@ -33,19 +32,20 @@ class DropboxHelper : CloudHelper {
                     .uploadBuilder("/${fileName}")
                     .withMode(WriteMode.OVERWRITE)
                     .uploadAndFinish(inputStream)
+                Log.d("Upload $fileName", "$fileName uploaded successful: $data")
             } catch (e: Exception) {
                 Log.e("CloudUploadException", "${e.message}")
             }
         }
 
-    override suspend fun download(fileName: String) = withContext(Dispatchers.IO) {
-        val outputStream: OutputStream = ByteArrayOutputStream()
+    override suspend fun download(fileName: String): ByteArray = withContext(Dispatchers.IO) {
+        val outputStream = ByteArrayOutputStream()
         try {
-            client.files().download("/${fileName}")
-                .download(outputStream)
+            client.files().download("/${fileName}").download(outputStream)
+            Log.d("Download $fileName", "$fileName downloaded successful: $outputStream")
         } catch (e: Exception) {
             Log.e("CloudDownloadException", "${e.message}")
         }
-        outputStream.toString()
+        outputStream.toByteArray()
     }
 }

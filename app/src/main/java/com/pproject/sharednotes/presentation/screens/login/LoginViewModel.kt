@@ -21,7 +21,8 @@ import kotlinx.coroutines.launch
 data class LoginUiState(
     val username: String = "",
     val password: String = "",
-    var remember: Boolean = false,
+    val remember: Boolean = false,
+    val loading: Boolean = true,
 ) {
     fun isNotEmpty(): Boolean {
         return username.isNotEmpty() && password.isNotEmpty()
@@ -57,8 +58,12 @@ class LoginViewModel(
 
     // Login functions.
     fun tryLogOnActiveUser(navController: NavController) = viewModelScope.launch {
-        preferencesRepository.getActivePreference().firstOrNull()?.let {
-            navController.navigate("${AppScreens.HomeScreen.route}/${it.username}")
+        preferencesRepository.getActivePreference().firstOrNull().let {
+            if (it != null) {
+                navController.navigate("${AppScreens.HomeScreen.route}/${it.username}")
+            } else {
+                uiState = uiState.copy(loading = false)
+            }
         }
     }
 

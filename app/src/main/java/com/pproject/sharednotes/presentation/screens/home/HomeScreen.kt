@@ -35,7 +35,7 @@ fun HomeScreen(
                     onDeleteNotification = { homeViewModel.interactNotification(it, false) },
                     onLogOut = {
                         homeViewModel.logOut(navController)
-                    }
+                    },
                 )
             },
             floatingActionButton = {
@@ -72,6 +72,7 @@ fun HomeScreen(
                             onCreateNote = {
                                 homeViewModel.createNewNote(navController, it)
                             },
+                            modifier = Modifier.padding(10.dp),
                         )
                     }
                 }

@@ -30,6 +30,7 @@ data class NoteUiState(
     val content: String = "",
     val pinned: Boolean = false,
     val folder: Int = 0,
+    val loading: Boolean = false,
 ) {
     fun isEmpty(): Boolean {
         return title == "" && content == ""
@@ -60,12 +61,7 @@ class NoteViewModel(
     val users: LiveData<List<String>> = noteRepository.getUserIdsById(openNoteId).asLiveData()
 
     // Screen state.
-    var uiState by mutableStateOf(
-        NoteUiState(
-            title = note.value?.note?.title ?: "",
-            content = note.value?.note?.content ?: "",
-        )
-    )
+    var uiState by mutableStateOf(NoteUiState())
         private set
 
 
@@ -89,8 +85,9 @@ class NoteViewModel(
     }
 
     fun backToLastScreen(navController: NavController) = viewModelScope.launch {
-        navController.popBackStack()
+        uiState = uiState.copy(loading = true)
         noteRepository.saveOnCloud()
+        navController.popBackStack()
     }
 
     // Note functions.

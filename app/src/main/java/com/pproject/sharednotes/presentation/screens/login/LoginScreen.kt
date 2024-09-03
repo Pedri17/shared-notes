@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.pproject.sharednotes.R
+import com.pproject.sharednotes.presentation.common.LoadingScreen
 import com.pproject.sharednotes.presentation.common.authentication.ClickableRouteText
 import com.pproject.sharednotes.presentation.common.authentication.DataTextField
 import com.pproject.sharednotes.presentation.common.authentication.PasswordField
@@ -34,49 +35,53 @@ fun LoginScreen(
     LaunchedEffect(navController) {
         loginViewModel.tryLogOnActiveUser(navController)
     }
-    Surface {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 30.dp)
-        ) {
-            Spacer(modifier = Modifier.height(10.dp))
-            DataTextField(
-                value = loginViewModel.uiState.username,
-                onChange = { loginViewModel.updateUsername(it) },
-                modifier = Modifier.fillMaxWidth()
-            )
-            PasswordField(
-                value = loginViewModel.uiState.password,
-                onChange = { loginViewModel.updatePassword(it) },
-                submit = {},
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            LabeledCheckbox(
-                label = stringResource(R.string.remember_me),
-                onCheckChanged = {
-                    loginViewModel.updateRemember(!loginViewModel.uiState.remember)
-                },
-                isChecked = loginViewModel.uiState.remember
-            )
-            Spacer(modifier = Modifier.height(20.dp))
-            Button(
-                onClick = { loginViewModel.loginUser(navController) },
-                enabled = loginViewModel.uiState.isNotEmpty(),
-                shape = RoundedCornerShape(5.dp),
-                modifier = Modifier.fillMaxWidth()
+    if (!loginViewModel.uiState.loading) {
+        Surface {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 30.dp)
             ) {
-                Text(stringResource(R.string.login))
+                Spacer(modifier = Modifier.height(10.dp))
+                DataTextField(
+                    value = loginViewModel.uiState.username,
+                    onChange = { loginViewModel.updateUsername(it) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                PasswordField(
+                    value = loginViewModel.uiState.password,
+                    onChange = { loginViewModel.updatePassword(it) },
+                    submit = {},
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                LabeledCheckbox(
+                    label = stringResource(R.string.remember_me),
+                    onCheckChanged = {
+                        loginViewModel.updateRemember(!loginViewModel.uiState.remember)
+                    },
+                    isChecked = loginViewModel.uiState.remember
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+                Button(
+                    onClick = { loginViewModel.loginUser(navController) },
+                    enabled = loginViewModel.uiState.isNotEmpty(),
+                    shape = RoundedCornerShape(5.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.login))
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                ClickableRouteText(
+                    navController = navController,
+                    text = stringResource(R.string.or_sign_up),
+                    route = AppScreens.RegisterScreen.route
+                )
             }
-            Spacer(modifier = Modifier.height(10.dp))
-            ClickableRouteText(
-                navController = navController,
-                text = stringResource(R.string.or_sign_up),
-                route = AppScreens.RegisterScreen.route
-            )
         }
+    } else {
+        LoadingScreen()
     }
 }

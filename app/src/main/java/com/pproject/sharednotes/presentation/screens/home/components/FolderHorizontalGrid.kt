@@ -67,6 +67,7 @@ fun FolderHorizontalGrid(
     ) {
         Column {
             Row(
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {

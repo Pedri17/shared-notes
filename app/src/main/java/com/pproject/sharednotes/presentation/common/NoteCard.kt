@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -37,22 +36,18 @@ fun NoteCard(
     activeUser: String,
     navController: NavController,
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.secondaryContainer,
 ) {
     Surface(
         onClick = {
             navController.navigate("${AppScreens.NoteScreen.route}/${activeUser}/${note.noteId}")
         },
-        shape = RoundedCornerShape(15.dp),
+        shape = RoundedCornerShape(14.dp),
     ) {
         ElevatedCard(
-            elevation = CardDefaults.cardElevation(defaultElevation = 50.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
             modifier = modifier
                 .height(200.dp)
                 .width(150.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = color
-            ),
         ) {
             Column(
                 modifier = Modifier
@@ -78,6 +73,7 @@ fun NoteCard(
                             fontSize = 14.sp,
                             lineHeight = 16.sp,
                             overflow = TextOverflow.Ellipsis,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
                                 .weight(0.4f, false)
@@ -86,7 +82,7 @@ fun NoteCard(
                     }
                 }
                 if (note.title != "") {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.inverseOnSurface)
+                    HorizontalDivider()
                 }
                 Text(
                     text = note.content,
@@ -94,6 +90,7 @@ fun NoteCard(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Normal,
                     lineHeight = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .padding(4.dp)

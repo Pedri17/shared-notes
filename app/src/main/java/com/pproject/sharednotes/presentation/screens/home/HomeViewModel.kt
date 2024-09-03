@@ -34,11 +34,13 @@ class HomeViewModel(
     private val preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
     init {
-        viewModelScope.launch {
-            folderRepository.loadFromCloud()
-            noteRepository.loadFromCloud()
-            notificationRepository.loadFromCloud()
-        }
+        refreshData()
+    }
+
+    private fun refreshData() = viewModelScope.launch {
+        folderRepository.loadFromCloud()
+        noteRepository.loadFromCloud()
+        notificationRepository.loadFromCloud()
     }
 
     // Navigation arguments.
@@ -68,7 +70,10 @@ class HomeViewModel(
         }.asLiveData()
     }
 
-    fun interactNotification(notificationId: Int, accept: Boolean) = viewModelScope.launch {
+    fun interactNotification(
+        notificationId: Int,
+        accept: Boolean,
+    ) = viewModelScope.launch {
         val notWithNote: NotificationWithNote? = notifications.map { list ->
             list.filter {
                 it.notification.notificationId == notificationId
@@ -78,18 +83,20 @@ class HomeViewModel(
         notWithNote?.let {
             // Use notification action
             if (accept) {
-                when (notWithNote.notification.type) {
-                    Notification.Type.PARTICIPATE ->
+                when (it.notification.type) {
+                    Notification.Type.PARTICIPATE -> {
                         noteRepository.insertUserInNote(
-                            notWithNote.notification.noteId,
-                            notWithNote.notification.toUser
+                            it.notification.noteId,
+                            it.notification.toUser
                         )
+                    }
 
-                    Notification.Type.DISPARTICIPATE ->
+                    Notification.Type.DISPARTICIPATE -> {
                         noteRepository.deleteUserInNote(
-                            notWithNote.notification.noteId,
-                            notWithNote.notification.toUser
+                            it.notification.noteId,
+                            it.notification.toUser
                         )
+                    }
                 }
             }
             // Delete notification
